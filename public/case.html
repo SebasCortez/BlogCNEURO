@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- El título se establecerá dinámicamente -->
+    <title>Cargando Caso Clínico... - CNEURO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Estilos específicos para la página del caso individual */
+        /* Puedes reutilizar muchos estilos de post.html */
+        body { background-color: var(--white, #fff); }
+        .case-header-area { /* Similar a post-header-area */
+             background: linear-gradient(135deg, var(--primary-color, #2c7873), var(--secondary-color, #6fb98f));
+             color: var(--white, #fff); padding: 2rem 0; margin-bottom: 2rem; text-align: center;
+         }
+         .case-title-single { /* Similar a post-title-single */
+            font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700;
+         }
+         .case-meta-single { /* Similar a post-meta-single */
+             font-size: 1rem; color: rgba(255, 255, 255, 0.8);
+         }
+         .case-meta-single span { margin: 0 10px; }
+         .case-meta-single i { margin-right: 5px; }
+
+         .case-content-area { /* Similar a post-content-area */
+             background-color: var(--white); padding: 2rem; border-radius: 8px;
+             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+             margin-top: -50px; /* Solapar ligeramente */
+             position: relative; z-index: 10; margin-bottom: 2rem;
+         }
+
+        .case-featured-image { /* Similar a post-featured-image */
+            width: 100%; max-height: 500px; object-fit: cover;
+            border-radius: 8px; margin-bottom: 2rem; display: block;
+        }
+
+        .case-full-content { /* Similar a post-full-content */
+            color: var(--text-color, #495057); line-height: 1.8; font-size: 1.1rem;
+        }
+        /* Reglas para imágenes DENTRO del contenido */
+        .case-full-content img {
+            max-width: 100%; height: auto; display: block;
+            margin: 1.5rem auto; border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .case-full-content h1, .case-full-content h2, .case-full-content h3 {
+            color: var(--primary-color, #2c7873); margin-top: 2rem; margin-bottom: 1rem;
+        }
+         .case-full-content p { margin-bottom: 1.2rem; }
+         .case-full-content a {
+             color: var(--secondary-color, #6fb98f); text-decoration: none;
+             border-bottom: 1px dotted var(--secondary-color, #6fb98f);
+             transition: color 0.3s ease, border-bottom-color 0.3s ease;
+         }
+          .case-full-content a:hover {
+             color: var(--primary-color, #2c7873); border-bottom-color: var(--primary-color, #2c7873);
+         }
+        .case-full-content ul, .case-full-content ol { margin-left: 2rem; margin-bottom: 1.2rem; }
+        .case-full-content blockquote {
+            border-left: 4px solid var(--accent-color, #f3c623); padding-left: 1rem;
+            margin: 1.5rem 0; font-style: italic; color: #6c757d;
+        }
+
+        .pdf-download-link { /* Estilo idéntico al de post.html */
+            display: inline-block; margin-top: 2rem; padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color, #2c7873); color: var(--white, #fff);
+            text-decoration: none; border-radius: 4px; transition: background-color 0.3s ease;
+        }
+        .pdf-download-link i { margin-right: 8px; }
+        .pdf-download-link:hover { background-color: #245c58; }
+
+        .back-link { /* Estilo idéntico */
+             display: block; margin-top: 2rem; color: var(--secondary-color);
+             text-decoration: none; font-size: 1rem;
+         }
+         .back-link:hover { text-decoration: underline; }
+
+        /* Indicadores de carga/error (idénticos) */
+        #loadingIndicator, #errorIndicator {
+            text-align: center; padding: 3rem; font-size: 1.2rem; color: var(--text-color);
+        }
+         #loadingIndicator i { font-size: 2rem; display: block; margin-bottom: 1rem; color: var(--primary-color);}
+         #errorIndicator { color: var(--danger-color, red); display: none; /* Oculto por defecto */}
+
+    </style>
+</head>
+<body>
+
+    <!-- Header (Incluir enlace a Casos Clínicos) -->
+     <header>
+         <div class="container header-content">
+             <div class="logo"> <a href="/"> <i class="fas fa-heartbeat"></i> <h1>CNEURO</h1> </a> </div>
+              <nav>
+                 <ul>
+                      <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
+                      <li><a href="/articles.html"><i class="fas fa-book-medical"></i> Artículos</a></li>
+                      <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
+                      <li><a href="/#revisiones"><i class="fas fa-search"></i> Revisiones</a></li>
+                      <li><a href="/#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
+                      <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                 </ul>
+             </nav>
+         </div>
+     </header>
+
+    <!-- Indicadores -->
+    <div id="loadingIndicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        Cargando caso clínico...
+    </div>
+    <div id="errorIndicator"></div>
+
+    <!-- Contenido del Caso (Oculto inicialmente) -->
+    <article id="caseArticle" style="display: none;">
+         <!-- Área del Título y Metadatos -->
+         <section class="case-header-area">
+            <div class="container">
+                <h1 class="case-title-single" id="caseTitle"></h1>
+                <div class="case-meta-single">
+                    <span id="caseCategory"><i class="fas fa-tag"></i> </span>
+                    <span id="caseAuthor"><i class="fas fa-user-md"></i> </span>
+                    <span id="caseDate"><i class="fas fa-calendar-alt"></i> </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Área del Contenido Principal -->
+        <div class="container">
+             <div class="case-content-area">
+                 <!-- Imagen Destacada -->
+                 <img src="" alt="" class="case-featured-image" id="caseImage" style="display: none;">
+
+                 <!-- Contenido Completo del Caso -->
+                 <div class="case-full-content" id="caseFullContent">
+                     <!-- El contenido HTML se insertará aquí -->
+                 </div>
+
+                  <!-- Enlace de Descarga PDF (si existe) -->
+                  <a href="#" id="pdfLink" class="pdf-download-link" style="display: none;" target="_blank" rel="noopener noreferrer">
+                      <i class="fas fa-file-pdf"></i> Descargar PDF Adjunto
+                  </a>
+
+                 <!-- Enlace para volver -->
+                 <a href="/cases.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver a Casos Clínicos</a>
+            </div>
+        </div>
+    </article>
+
+
+    <!-- Footer -->
+     <footer id="contacto">
+         <div class="container">
+             <div class="footer-content">
+                  <!-- ... (contenido del footer igual que en otras páginas) ... -->
+             </div>
+             <div class="copyright">
+                 <p>© 2025 CNEURO. Todos los derechos reservados.</p>
+             </div>
+         </div>
+     </footer>
+
+    <!-- Incluir case.js -->
+    <script src="/case.js"></script>
+
+</body>
+</html>

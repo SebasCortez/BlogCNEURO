@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisiones Médicas - CNEURO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Reutilizamos estilos de articles.html y cases.html */
+        .filter-search-controls {
+            display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+            padding: 1.5rem; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #eee;
+        }
+        .filter-search-controls .control-group { flex: 1; min-width: 200px; }
+        .filter-search-controls label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-color); }
+        .filter-search-controls select, .filter-search-controls input[type="search"] {
+            width: 100%; padding: 0.7rem 0.9rem; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 1rem; box-sizing: border-box;
+        }
+        .filter-search-controls input[type="search"] { appearance: none; }
+         .main-content-revisions { padding: 3rem 0; min-height: calc(100vh - 150px); }
+         .page-title { text-align: center; margin-bottom: 2.5rem; color: var(--primary-color, #2c7873); font-size: 2.2rem; }
+         /* Usaremos .items-grid también aquí */
+         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+         #loadingMessage, #errorMessage, #noResultsMessage {
+             text-align: center; padding: 2rem; font-size: 1.1rem;
+             color: var(--text-color); grid-column: 1 / -1; /* Ocupar todo el ancho */
+             display: none; /* Ocultos por defecto */
+         }
+         #loadingMessage {display: block;} /* Visible inicialmente */
+         #loadingMessage i { margin-right: 10px; }
+         #errorMessage { color: var(--danger-color, red); }
+         .btn-back-container { margin-bottom: 1.5rem; }
+         .btn-back {
+             display: inline-flex; align-items: center; background-color: var(--secondary-color, #6fb98f);
+             color: var(--white, #fff) !important; padding: 0.7rem 1.4rem; border-radius: 4px;
+             text-decoration: none; font-size: 1rem; font-weight: 500;
+             transition: background-color 0.3s ease; border: none;
+         }
+         .btn-back:hover { background-color: var(--primary-color, #2c7873); color: var(--white, #fff) !important; }
+         .btn-back i { margin-right: 8px; }
+
+         /* Estilos para tarjeta de revisión (usamos las clases .item-* de index/style.css) */
+         .item-card {
+            background-color: var(--white); border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column;
+         }
+        .item-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); }
+        .item-image { height: 200px; overflow: hidden; background-color: #eee; }
+        .item-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .item-card:hover .item-image img { transform: scale(1.05); }
+        .item-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .item-category { display: inline-block; background-color: var(--secondary-color); color: var(--white); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 0.8rem; align-self: flex-start; }
+        .item-title { font-size: 1.3rem; margin-bottom: 0.8rem; color: var(--dark-color); }
+        .item-excerpt { margin-bottom: 1.2rem; color: var(--text-color); flex-grow: 1; font-size: 0.95rem; }
+        .item-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: #6c757d; margin-top: auto; padding-top: 1rem; border-top: 1px solid #eee;}
+        .item-date i, .item-author i { margin-right: 5px; }
+         /* Botón específico si quieres diferenciarlo */
+        .btn-view-revision {
+             margin-top: 1rem; background-color: var(--accent-color) !important; /* Color diferente? */
+             color: var(--dark-color) !important; align-self: flex-start; padding: 0.6rem 1.2rem;
+             font-size: 0.9rem; text-decoration: none; border-radius: 4px; display: inline-block;
+        }
+        .btn-view-revision:hover { background-color: #e0b21c !important; }
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+             <div class="logo"> <a href="/"> <i class="fas fa-heartbeat"></i> <h1>CNEURO</h1> </a> </div>
+             <nav>
+                 <ul>
+                     <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
+                     <li><a href="/articles.html"><i class="fas fa-book-medical"></i> Artículos</a></li>
+                     <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
+                     <li><a href="/revisiones.html" style="background-color: rgba(255, 255, 255, 0.2);"><i class="fas fa-book-reader"></i> Revisiones</a></li>
+                     <li><a href="#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
+                     <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                     <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                 </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content-revisions">
+        <div class="container">
+
+            <!-- Botón Volver -->
+            <div class="btn-back-container"> <a href="/" class="btn btn-back"> <i class="fas fa-arrow-left"></i> Volver al Inicio </a> </div>
+
+            <h2 class="page-title">Revisiones Médicas Publicadas</h2>
+
+            <!-- Controles de Filtro y Búsqueda -->
+            <div class="filter-search-controls">
+                <div class="control-group">
+                    <label for="categoryFilter">Filtrar por Categoría:</label>
+                    <select id="categoryFilter">
+                        <option value="all">Todas las categorías</option>
+                        <!-- Las categorías se llenarán dinámicamente -->
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="searchInput">Buscar por Título/Texto:</label>
+                    <input type="search" id="searchInput" placeholder="Escribe para buscar...">
+                </div>
+            </div>
+
+            <!-- Cuadrícula de Revisiones -->
+            <div class="items-grid" id="revisionsGrid">
+                <!-- Mensajes -->
+                <p id="loadingMessage"><i class="fas fa-spinner fa-spin"></i> Cargando revisiones...</p>
+                <p id="errorMessage" style="display: none;"></p>
+                <p id="noResultsMessage" style="display: none;">No se encontraron revisiones que coincidan con tu filtro/búsqueda.</p>
+                <!-- Revisiones se insertan aquí -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+     <footer id="contacto">
+         <div class="container">
+             <div class="footer-content">
+                 <div class="footer-column">
+                     <h4>CNEURO</h4>
+                     <p>Blog médico semanal con las últimas investigaciones, revisiones y avances.</p>
+                     <div class="social-links">
+                         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                         <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                         <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                     </div>
+                 </div>
+                 <div class="footer-column">
+                     <h4>Enlaces Rápidos</h4>
+                     <ul>
+                         <li><a href="/">Inicio</a></li>
+                         <li><a href="/articles.html">Artículos</a></li>
+                         <li><a href="/cases.html">Casos Clínicos</a></li>
+                         <li><a href="/revisiones.html">Revisiones</a></li>
+                         <li><a href="/#sobre-nosotros">Sobre Nosotros</a></li>
+                         <li><a href="/login.html">Login Admin</a></li>
+                     </ul>
+                 </div>
+                 <div class="footer-column">
+                     <h4>Contacto</h4>
+                      <ul>
+                         <li><i class="fas fa-map-marker-alt"></i> Calle Médica 123, Cuzco, Perú</li>
+                         <li><i class="fas fa-phone"></i> +51 948 705 090</li>
+                         <li><i class="fas fa-envelope"></i> info@cneuroblog.com</li>
+                     </ul>
+                 </div>
+             </div>
+             <div class="copyright">
+                 <p>© 2024 CNEURO. Todos los derechos reservados.</p>
+             </div>
+         </div>
+     </footer>
+
+    <!-- JavaScript para cargar, filtrar y buscar Revisiones -->
+    <script>
+        const revisionsGrid = document.getElementById('revisionsGrid');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+
+        let allRevisions = []; // Almacenará todas las revisiones
+
+        // Función para crear HTML de tarjeta de revisión
+        function createRevisionCardHTML(revision) {
+            const formattedDate = revision.publish_date ? new Date(revision.publish_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+            const imageUrl = revision.image_url || '/placeholder.png'; // Placeholder si no hay imagen
+            const title = revision.title || 'Título no disponible';
+            const excerpt = revision.excerpt || 'Extracto no disponible.';
+            const category = revision.category || 'Sin Categoría';
+            const author = revision.author || 'Autor Desconocido';
+            // Nota: El enlace '/revision.html?id=...' necesita que creemos esa página más adelante
+            const detailPageUrl = `/revision.html?id=${revision.id}`;
+
+            // Usamos las clases .item-* para reutilizar estilos
+            return `
+                <article class="item-card">
+                    <div class="item-image"><a href="${detailPageUrl}"><img src="${imageUrl}" alt="Imagen para ${title}" loading="lazy" onerror="this.onerror=null;this.src='/placeholder.png';"></a></div>
+                    <div class="item-content">
+                        <span class="item-category">${category}</span>
+                        <h3 class="item-title"><a href="${detailPageUrl}" style="text-decoration: none; color: inherit;">${title}</a></h3>
+                        <p class="item-excerpt">${excerpt}</p>
+                        <div class="item-meta">
+                            <span class="item-date"><i class="fas fa-calendar-alt"></i> ${formattedDate}</span>
+                            <span class="item-author"><i class="fas fa-user-edit"></i> ${author}</span>
+                        </div>
+                        <a href="${detailPageUrl}" class="btn btn-view-revision">Leer Revisión</a>
+                    </div>
+                </article>`;
+        }
+
+        // Función para poblar el dropdown de categorías
+        function populateCategoryFilter() {
+            if (!allRevisions || allRevisions.length === 0) return;
+            const categories = [...new Set(allRevisions.map(r => r.category))].filter(Boolean); // Filtrar nulos/vacíos
+            categories.sort(); // Ordenar alfabéticamente
+
+            // Limpiar opciones existentes (excepto la primera "Todas")
+            categoryFilter.innerHTML = '<option value="all">Todas las categorías</option>';
+
+            // Añadir opciones para cada categoría
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Función para filtrar y renderizar revisiones
+        function renderFilteredRevisions() {
+            const selectedCategory = categoryFilter.value;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            // Filtrar basado en la categoría y término de búsqueda
+            const filteredRevisions = allRevisions.filter(revision => {
+                const categoryMatch = (selectedCategory === 'all' || revision.category === selectedCategory);
+                const searchMatch = (searchTerm === '' ||
+                                     (revision.title && revision.title.toLowerCase().includes(searchTerm)) ||
+                                     (revision.excerpt && revision.excerpt.toLowerCase().includes(searchTerm)));
+                                    // Podríamos añadir full_content si fuera necesario, pero más lento
+                return categoryMatch && searchMatch;
+            });
+
+            // Renderizar las revisiones filtradas
+            revisionsGrid.innerHTML = ''; // Limpiar grid
+            errorMessage.style.display = 'none';
+            noResultsMessage.style.display = 'none';
+
+            if (filteredRevisions.length === 0) {
+                 noResultsMessage.style.display = 'block'; // Mostrar mensaje "sin resultados"
+                 revisionsGrid.appendChild(noResultsMessage); // Moverlo dentro del grid si está vacío
+            } else {
+                filteredRevisions.forEach(revision => {
+                    const cardHTML = createRevisionCardHTML(revision);
+                    revisionsGrid.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            }
+        }
+
+        // Función inicial para cargar todas las revisiones
+        async function loadAllRevisionsAndSetup() {
+            try {
+                errorMessage.style.display = 'none';
+                noResultsMessage.style.display = 'none';
+                loadingMessage.style.display = 'block';
+
+                const response = await fetch('/api/revisions'); // Llamar a la nueva ruta API pública
+                if (!response.ok) {
+                     const errorData = await response.json().catch(() => ({})); // Intentar obtener mensaje de error
+                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                }
+                allRevisions = await response.json(); // Guardar en la variable global
+
+                loadingMessage.style.display = 'none';
+
+                if (!allRevisions || allRevisions.length === 0) {
+                     // Insertar el mensaje directamente si no hay revisiones
+                     revisionsGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 2rem; color: #6c757d;">No hay revisiones médicas publicadas por el momento.</p>';
+                } else {
+                    populateCategoryFilter(); // Llenar el dropdown de categorías
+                    renderFilteredRevisions(); // Renderizar inicialmente todas las revisiones
+                }
+
+            } catch (error) {
+                console.error('Error al cargar las revisiones médicas:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = `No se pudieron cargar las revisiones: ${error.message}. Inténtalo de nuevo más tarde.`;
+                errorMessage.style.display = 'block';
+                revisionsGrid.innerHTML = ''; // Limpiar grid
+                revisionsGrid.appendChild(errorMessage); // Añadir mensaje de error al grid
+            }
+        }
+
+        // --- Event Listeners para los controles ---
+        categoryFilter.addEventListener('change', renderFilteredRevisions);
+        searchInput.addEventListener('input', renderFilteredRevisions); // 'input' reacciona instantáneamente
+
+        // Carga inicial al cargar el DOM
+        document.addEventListener('DOMContentLoaded', loadAllRevisionsAndSetup);
+    </script>
+
+</body>
+</html>

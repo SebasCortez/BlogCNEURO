@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CNEURO Admin</title>
+    <!-- Puedes enlazar tu style.css principal si quieres -->
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Estilos básicos para el login, puedes personalizarlos */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5; /* Un gris claro */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             /* Reutiliza variables si style.css las define globalmente */
+             background-color: var(--light-color, #f0f2f5);
+        }
+        .login-container {
+            background: var(--white, white);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 2rem;
+            color: var(--primary-color, #2c7873);
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color, #495057);
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        input:focus {
+             border-color: var(--primary-color, #2c7873);
+             outline: none;
+             box-shadow: 0 0 0 2px rgba(44, 120, 115, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: var(--primary-color, #2c7873);
+            color: var(--white, white);
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 0.5rem; /* Espacio antes del botón */
+        }
+        button:hover {
+            background-color: var(--secondary-color, #6fb98f);
+        }
+        .error-message {
+            color: #dc3545; /* Rojo para errores */
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 0.8rem;
+            border-radius: 4px;
+            margin-top: 1.5rem;
+            display: none; /* Oculto por defecto */
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .home-link {
+            display: block;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--primary-color, #2c7873);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+         .home-link:hover {
+            text-decoration: underline;
+            color: var(--secondary-color, #6fb98f);
+         }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Acceso Usuario</h2>
+        <form id="loginForm" method="POST" action="/login"> <!-- Acción apunta a la ruta POST /login -->
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" name="username" required autofocus> <!-- autofocus para conveniencia -->
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Entrar</button>
+            <div id="errorMessage" class="error-message">
+                <!-- El mensaje se establecerá desde JS -->
+            </div>
+        </form>
+         <a href="/" class="home-link">Volver al inicio</a>
+    </div>
+
+    <script>
+        // Mostrar mensaje de error basado en el parámetro URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorParam = urlParams.get('error');
+        const errorMessageDiv = document.getElementById('errorMessage');
+
+        if (errorParam && errorMessageDiv) {
+            let message = 'Error desconocido.';
+            if (errorParam === '1') {
+                message = 'Usuario o contraseña incorrectos.';
+            } else if (errorParam === '2') {
+                message = 'Error de configuración del servidor. Contacta al administrador.';
+            } else if (errorParam === '3') {
+                 message = 'Error interno del servidor. Inténtalo de nuevo más tarde.';
+            }
+             errorMessageDiv.textContent = message;
+             errorMessageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

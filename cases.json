@@ -1,0 +1,26 @@
+[
+  {
+    "id": 2700000000001,
+    "category": "Neurología",
+    "title": "Caso Clínico: Cefalea Súbita en Joven",
+    "excerpt": "Paciente de 25 años presenta cefalea intensa de inicio súbito. Diagnóstico diferencial y manejo.",
+    "full_content": "<h3>Presentación del Caso</h3><p>Varón de 25 años, sin antecedentes médicos de interés, acude a urgencias refiriendo cefalea holocraneal de intensidad 10/10, de inicio brusco mientras realizaba ejercicio físico hace 1 hora. No refiere fiebre, déficits neurológicos ni otros síntomas acompañantes.</p><h3>Exploración y Pruebas</h3><p>Exploración física general y neurológica sin hallazgos patológicos. Constantes vitales normales. Se realiza TC craneal urgente sin contraste que resulta normal.</p><p>Ante la alta sospecha de hemorragia subaracnoidea (HSA) por la clínica ('thunderclap headache'), se procede a realizar punción lumbar...</p><h3>Discusión</h3><p>Este caso resalta la importancia de considerar HSA en pacientes jóvenes con cefalea súbita, incluso con TC inicial normal...</p>",
+    "image_url": "/uploads/1744218243538-167366413.png",
+    "author": "Dr. Martínez (Caso)",
+    "publish_date": "2025-04-10T11:00:00Z",
+    "pdf_url": null,
+    "last_updated_date": "2025-04-09T17:04:03.545Z"
+  },
+  {
+    "id": 2700000000002,
+    "category": "Cardiología",
+    "title": "Caso Clínico: Dolor Torácico Atípico",
+    "excerpt": "Mujer de 60 años con factores de riesgo cardiovascular consulta por dolor torácico de características atípicas.",
+    "full_content": "<h3>Historia Clínica</h3><p>Mujer de 60 años, con antecedentes de HTA, dislipidemia y diabetes mellitus tipo 2, consulta por episodio de molestia retroesternal opresiva irradiada a mandíbula, de 20 minutos de duración, que apareció en reposo y cedió espontáneamente. Niega cortejo vegetativo.</p><h3>Exploración y Pruebas Iniciales</h3><p>Buen estado general, eupneica. Auscultación cardiopulmonar normal. ECG inicial sin cambios isquémicos agudos. Troponinas iniciales negativas.</p><h3>Evolución y Diagnóstico</h3><p>Se decide ingreso para estudio. Durante el ingreso presenta nuevo episodio similar. Se repite ECG que muestra inversión de onda T en cara inferior. Curva de troponinas positiva...</p><h3>Conclusión</h3><p>El dolor torácico en mujeres y diabéticos puede presentarse de forma atípica, siendo crucial un alto índice de sospecha para el diagnóstico de síndrome coronario agudo...</p>",
+    "image_url": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    "author": "Dra. Sánchez (Caso)",
+    "publish_date": "2025-04-08T15:30:00Z",
+    "pdf_url": null,
+    "last_updated_date": "2025-04-09T16:53:55.753Z"
+  }
+]

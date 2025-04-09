@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Artículos - CNEURO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* --- ESTILOS PARA FILTROS Y BÚSQUEDA --- */
+        .filter-search-controls {
+            display: flex;
+            flex-wrap: wrap; /* Para que se apilen en pantallas pequeñas */
+            gap: 1rem; /* Espacio entre controles */
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa; /* Fondo ligero */
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .filter-search-controls .control-group {
+            flex: 1; /* Ocupar espacio disponible */
+            min-width: 200px; /* Ancho mínimo antes de envolver */
+        }
+        .filter-search-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        .filter-search-controls select,
+        .filter-search-controls input[type="search"] {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .filter-search-controls input[type="search"] {
+            appearance: none; /* Quitar estilo por defecto */
+        }
+        /* --- FIN ESTILOS FILTROS --- */
+
+        /* Otros estilos (main-content, page-title, posts-grid, post-card, btn-back, footer...) */
+         .main-content-articles { padding: 3rem 0; min-height: calc(100vh - 150px); }
+         .page-title { text-align: center; margin-bottom: 2.5rem; color: var(--primary-color, #2c7873); font-size: 2.2rem; }
+         .posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+         #loadingMessage, #errorMessage, #noResultsMessage {
+             text-align: center; padding: 2rem; font-size: 1.1rem;
+             color: var(--text-color); grid-column: 1 / -1; /* Ocupar todo el ancho */
+             display: none; /* Ocultos por defecto */
+         }
+         #loadingMessage {display: block;} /* Visible inicialmente */
+         #loadingMessage i { margin-right: 10px; }
+         #errorMessage { color: var(--danger-color, red); }
+         .btn-back-container { margin-bottom: 1.5rem; }
+         .btn-back {
+             display: inline-flex; align-items: center; background-color: var(--secondary-color, #6fb98f);
+             color: var(--white, #fff) !important; padding: 0.7rem 1.4rem; border-radius: 4px;
+             text-decoration: none; font-size: 1rem; font-weight: 500;
+             transition: background-color 0.3s ease; border: none;
+         }
+         .btn-back:hover { background-color: var(--primary-color, #2c7873); color: var(--white, #fff) !important; }
+         .btn-back i { margin-right: 8px; }
+
+         /* Estilos para tarjeta de artículo */
+         .post-card {
+            background-color: var(--white); border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column;
+         }
+        .post-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); }
+        .post-image { height: 200px; overflow: hidden; background-color: #eee; }
+        .post-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .post-card:hover .post-image img { transform: scale(1.05); }
+        .post-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .post-category { display: inline-block; background-color: var(--secondary-color); color: var(--white); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 0.8rem; align-self: flex-start; }
+        .post-title { font-size: 1.3rem; margin-bottom: 0.8rem; color: var(--dark-color); }
+        .post-excerpt { margin-bottom: 1.2rem; color: var(--text-color); flex-grow: 1; font-size: 0.95rem; }
+        .post-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: #6c757d; margin-top: auto; padding-top: 1rem; border-top: 1px solid #eee;}
+        .post-date i, .post-author i { margin-right: 5px; }
+        .btn-read-more {
+             margin-top: 1rem; background-color: var(--secondary-color) !important;
+             color: white !important; align-self: flex-start; padding: 0.6rem 1.2rem;
+             font-size: 0.9rem; text-decoration: none; border-radius: 4px; display: inline-block;
+        }
+        .btn-read-more:hover { background-color: var(--primary-color) !important; }
+
+    </style>
+</head>
+<body>
+    <!-- Header (Asegúrate que incluye el enlace a Casos Clínicos) -->
+    <header>
+        <div class="container header-content">
+             <div class="logo"> <a href="/"> <i class="fas fa-heartbeat"></i> <h1>CNEURO</h1> </a> </div>
+             <nav>
+                 <ul>
+                     <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
+                     <li><a href="/articles.html" style="background-color: rgba(255, 255, 255, 0.2);"><i class="fas fa-book-medical"></i> Artículos</a></li>
+                     <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
+                     <li><a href="/#revisiones"><i class="fas fa-search"></i> Revisiones</a></li>
+                     <li><a href="/#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
+                     <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                 </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content-articles">
+        <div class="container">
+
+            <!-- Botón Volver -->
+            <div class="btn-back-container"> <a href="/" class="btn btn-back"> <i class="fas fa-arrow-left"></i> Volver al Inicio </a> </div>
+
+            <h2 class="page-title">Todos los Artículos Publicados</h2>
+
+            <!-- Controles de Filtro y Búsqueda -->
+            <div class="filter-search-controls">
+                <div class="control-group">
+                    <label for="categoryFilter">Filtrar por Categoría:</label>
+                    <select id="categoryFilter">
+                        <option value="all">Todas las categorías</option>
+                        <!-- Las categorías se llenarán dinámicamente -->
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="searchInput">Buscar por Título/Texto:</label>
+                    <input type="search" id="searchInput" placeholder="Escribe para buscar...">
+                </div>
+            </div>
+
+            <!-- Cuadrícula de Posts -->
+            <div class="posts-grid" id="postsGrid">
+                <!-- Mensajes -->
+                <p id="loadingMessage"><i class="fas fa-spinner fa-spin"></i> Cargando artículos...</p>
+                <p id="errorMessage" style="display: none;"></p>
+                <p id="noResultsMessage" style="display: none;">No se encontraron artículos que coincidan con tu filtro/búsqueda.</p>
+                <!-- Posts se insertan aquí -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (Reutiliza el de index.html) -->
+     <footer id="contacto">
+         <div class="container">
+             <div class="footer-content">
+                  <!-- Columna Descripción CNEURO -->
+                  <div class="footer-column">
+                      <h4>CNEURO</h4>
+                      <p>Blog médico semanal con las últimas investigaciones, revisiones y avances en el campo de la medicina.</p>
+                      <div class="social-links">
+                          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                      </div>
+                  </div>
+                  <!-- Columna Enlaces Rápidos -->
+                  <div class="footer-column">
+                      <h4>Enlaces Rápidos</h4>
+                      <ul>
+                          <li><a href="/">Inicio</a></li>
+                          <li><a href="/articles.html">Artículos</a></li>
+                          <li><a href="/cases.html">Casos Clínicos</a></li>
+                          <li><a href="/#revisiones">Revisiones</a></li>
+                          <li><a href="/#sobre-nosotros">Sobre Nosotros</a></li>
+                          <li><a href="/admin.html">Admin</a></li>
+                      </ul>
+                  </div>
+                  <!-- Columna Contacto -->
+                  <div class="footer-column">
+                      <h4>Contacto</h4>
+                       <ul>
+                          <li><i class="fas fa-map-marker-alt"></i> Calle Médica 123, Cuzco</li>
+                          <li><i class="fas fa-phone"></i> +51 948 705 090</li>
+                          <li><i class="fas fa-envelope"></i> info@cneuroblog.com</li>
+                      </ul>
+                  </div>
+             </div>
+             <div class="copyright">
+                 <p>© 2024 CNEURO. Todos los derechos reservados.</p>
+             </div>
+         </div>
+     </footer>
+
+    <!-- JavaScript para cargar, filtrar y buscar -->
+    <script>
+        const postsGrid = document.getElementById('postsGrid');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+
+        let allPosts = []; // Almacenará todos los posts (artículos) una vez cargados
+
+        // Función para crear HTML de tarjeta
+        function createPostCardHTML(post) {
+            const formattedDate = new Date(post.publish_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+            const imageUrl = post.image_url || '/placeholder.png';
+            return `
+                <article class="post-card">
+                    <div class="post-image"><a href="/post.html?id=${post.id}"><img src="${imageUrl}" alt="Imagen para ${post.title}" loading="lazy" onerror="this.onerror=null;this.src='/placeholder.png';"></a></div>
+                    <div class="post-content">
+                        <span class="post-category">${post.category}</span>
+                        <h3 class="post-title"><a href="/post.html?id=${post.id}" style="text-decoration: none; color: inherit;">${post.title}</a></h3>
+                        <p class="post-excerpt">${post.excerpt}</p>
+                        <div class="post-meta">
+                            <span class="post-date"><i class="fas fa-calendar-alt"></i> ${formattedDate}</span>
+                            <span class="post-author"><i class="fas fa-user-edit"></i> ${post.author}</span>
+                        </div>
+                        <a href="/post.html?id=${post.id}" class="btn btn-read-more">Leer Más</a>
+                    </div>
+                </article>`;
+        }
+
+        // Función para poblar el dropdown de categorías
+        function populateCategoryFilter() {
+            const categories = [...new Set(allPosts.map(post => post.category))];
+            categories.sort();
+
+            categoryFilter.innerHTML = '<option value="all">Todas las categorías</option>';
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Función para filtrar y renderizar posts
+        function renderFilteredPosts() {
+            const selectedCategory = categoryFilter.value;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            const filteredPosts = allPosts.filter(post => {
+                const categoryMatch = (selectedCategory === 'all' || post.category === selectedCategory);
+                const searchMatch = (searchTerm === '' ||
+                                     post.title.toLowerCase().includes(searchTerm) ||
+                                     post.excerpt.toLowerCase().includes(searchTerm));
+                return categoryMatch && searchMatch;
+            });
+
+            // Renderizar los posts filtrados
+            postsGrid.innerHTML = ''; // Limpiar grid
+            errorMessage.style.display = 'none';
+            noResultsMessage.style.display = 'none';
+
+            if (filteredPosts.length === 0) {
+                 noResultsMessage.style.display = 'block';
+                 postsGrid.appendChild(noResultsMessage);
+            } else {
+                filteredPosts.forEach(post => {
+                    const cardHTML = createPostCardHTML(post);
+                    postsGrid.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            }
+        }
+
+        // Función inicial para cargar todos los posts (artículos)
+        async function loadAllPostsAndSetup() {
+            try {
+                errorMessage.style.display = 'none';
+                noResultsMessage.style.display = 'none';
+                loadingMessage.style.display = 'block';
+
+                // *** LA CORRECCIÓN ESTÁ AQUÍ ***
+                const response = await fetch('/api/articles'); // Cambiado de /api/posts a /api/articles
+                if (!response.ok) {
+                     const errorData = await response.json().catch(() => ({})); // Intentar obtener mensaje
+                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                }
+                allPosts = await response.json(); // Guardar en la variable global
+
+                loadingMessage.style.display = 'none';
+
+                if (allPosts.length === 0) {
+                     postsGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 2rem; color: #6c757d;">No hay artículos publicados por el momento.</p>';
+                } else {
+                    populateCategoryFilter();
+                    renderFilteredPosts(); // Renderizar inicialmente todos los artículos
+                }
+
+            } catch (error) {
+                console.error('Error al cargar los artículos:', error);
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = `No se pudieron cargar los artículos: ${error.message}. Inténtalo de nuevo más tarde.`;
+                errorMessage.style.display = 'block';
+                postsGrid.innerHTML = ''; // Limpiar grid
+                postsGrid.appendChild(errorMessage); // Mostrar error en el grid
+            }
+        }
+
+        // --- Event Listeners para los controles ---
+        categoryFilter.addEventListener('change', renderFilteredPosts);
+        searchInput.addEventListener('input', renderFilteredPosts); // 'input' reacciona al escribir/borrar
+
+        // Carga inicial
+        document.addEventListener('DOMContentLoaded', loadAllPostsAndSetup);
+    </script>
+
+</body>
+</html>

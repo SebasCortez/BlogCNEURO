@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1700000000001,
+    "category": "Neurología",
+    "title": "Biomarcadores en Alzheimer (Ejemplo JSON)",
+    "excerpt": "Análisis de los últimos descubrimientos en biomarcadores para diagnóstico temprano.",
+    "full_content": "Este es el contenido completo sobre los biomarcadores en la enfermedad de Alzheimer. Estudios recientes indican que la detección de proteínas específicas en el líquido cefalorraquídeo o incluso en la sangre podría revolucionar el diagnóstico precoz. Se discuten las implicaciones clínicas y los desafíos pendientes en la validación de estos marcadores para su uso rutinario.",
+    "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ76ur6KBTb-Ozw8N17-RQDXU2An32O2rP28g&s",
+    "author": "Dr. Fernández (JSON)",
+    "publish_date": "2025-03-27T10:00:00Z",
+    "pdf_url": null,
+    "last_updated_date": "2025-04-09T17:21:13.041Z"
+  },
+  {
+    "id": 1700000000002,
+    "category": "Cardiología",
+    "title": "Guías de Hipertensión (Ejemplo JSON)",
+    "excerpt": "Revisión de las últimas recomendaciones internacionales para HTA.",
+    "full_content": "Las nuevas guías para el manejo de la hipertensión arterial enfatizan un enfoque más personalizado. Se revisan los umbrales de tratamiento, las opciones farmacológicas de primera línea y la importancia de las modificaciones del estilo de vida. También se aborda el manejo específico en poblaciones de alto riesgo como diabéticos y pacientes con enfermedad renal crónica.",
+    "image_url": "https://images.unsplash.com/photo-1581595219315-a187dd40c322?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    "author": "Dra. Gómez (JSON)",
+    "publish_date": "2025-03-26T09:00:00Z",
+    "pdf_url": null
+  }
+]

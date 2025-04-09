@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - CNEURO</title>
+    <link rel="stylesheet" href="/style.css"> <!-- Asume que style.css está en public/ -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!-- Font Awesome para iconos -->
+    <style>
+        /* Estilos generales reutilizados */
+        :root {
+            --primary-color: #2c7873;
+            --secondary-color: #6fb98f;
+            --accent-color: #f3c623;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --text-color: #495057;
+            --white: #ffffff;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --success-color: #28a745;
+        }
+        body {
+             padding-top: 80px; /* Espacio para el header fijo */
+             background-color: var(--light-color);
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             font-size: 16px; /* Base font size */
+        }
+        .admin-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background-color: var(--dark-color); color: var(--white);
+            padding: 0.8rem 2rem; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 101;
+        }
+        .admin-header h1 { font-size: 1.5rem; margin: 0; }
+        .admin-header .logout-form button {
+            background-color: var(--danger-color); color: white; padding: 0.5rem 1rem;
+            border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+        .admin-header .logout-form button:hover { background-color: #c82333; }
+
+        .container {
+            width: 95%; max-width: 1200px; margin: 2rem auto; padding: 0; /* Quitar padding para que las secciones internas lo manejen */
+            background-color: transparent; /* Hacer transparente el contenedor principal */
+            border-radius: 0; box-shadow: none;
+        }
+        .section-container { /* Nuevo contenedor para cada par de secciones (form + tabla) */
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2.5rem; /* Espacio entre secciones Artículos y Casos */
+        }
+        .section { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #eee; }
+        .section:last-child { border-bottom: none; margin-bottom: 1rem;}
+
+        /* Títulos de sección más distintivos */
+         h2.section-title {
+             color: var(--primary-color); margin-bottom: 1.5rem;
+             border-left: 4px solid var(--accent-color); padding-left: 10px;
+             font-size: 1.8rem; display: flex; align-items: center; gap: 10px;
+         }
+         h2.section-title i { color: var(--secondary-color); } /* Iconos en títulos */
+
+        /* Formulario (Estilos genéricos aplicables a todos los formularios) */
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #333;}
+        label.required::after { content: " *"; color: var(--danger-color, red); font-weight: normal; margin-left: 2px; }
+        input[type="text"], input[type="url"], textarea, select, input[type="date"] {
+            width: 100%; padding: 0.8rem; margin-bottom: 1rem;
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+         input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus, input[type="date"]:focus {
+             border-color: var(--primary-color); outline: none;
+             box-shadow: 0 0 0 2px rgba(44, 120, 115, 0.2);
+         }
+        input[readonly] { background-color: #e9ecef; cursor: not-allowed; opacity: 0.7; }
+         input[type="date"][readonly]::-webkit-calendar-picker-indicator { display: none; }
+         input[type="date"] { appearance: none; position: relative; background-color: white; }
+         input[type="date"]:not([readonly])::-webkit-calendar-picker-indicator {
+             cursor: pointer; opacity: 0.7;
+             filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);
+         }
+        textarea { min-height: 120px; resize: vertical; }
+        input[type="file"] { padding: 0.5rem; border: 1px dashed #ccc; background-color: #f9f9f9; margin-bottom: 0.5rem; /* Ajuste margen */}
+        .form-group { margin-bottom: 1.3rem; }
+        .image-option { margin-bottom: 1rem; border: 1px solid #eee; padding: 1rem; border-radius: 4px; background-color: #fdfdfd;}
+        .image-option label { font-weight: normal; margin-bottom: 0.3rem; }
+        small.help-text { font-size: 0.85rem; color: #6c757d; margin-top: -0.7rem; display: block; margin-bottom: 0.5rem;}
+        small.error-text { font-size: 0.85rem; color: var(--danger-color); display: block; min-height: 1em; margin-top: -0.5rem; }
+
+        .btn {
+             padding: 0.7rem 1.3rem; border: none; border-radius: 4px;
+             font-size: 1rem; cursor: pointer; transition: all 0.3s ease;
+             margin-right: 0.5rem; text-decoration: none; display: inline-block;
+             color: var(--white); text-align: center; line-height: 1.5;
+             vertical-align: middle;
+        }
+        .btn:disabled { background-color: #ccc !important; color: #666 !important; cursor: not-allowed; }
+        .btn-submit { background-color: var(--primary-color); }
+        .btn-submit:not(:disabled):hover { background-color: #245c58; }
+        .btn-cancel { background-color: #6c757d; }
+        .btn-cancel:hover { background-color: #5a6268; }
+        .btn-edit { background-color: var(--warning-color); color: var(--dark-color) !important; }
+        .btn-edit:hover { background-color: #e0a800; }
+        .btn-delete { background-color: var(--danger-color); }
+        .btn-delete:hover { background-color: #c82333; }
+        .btn i { margin-right: 5px; vertical-align: text-bottom; }
+
+        /* Mensajes de resultado (Aplicable a todos) */
+        .result-message { margin-top: 1.5rem; font-weight: bold; padding: 1rem; border-radius: 4px; display: none; }
+        .result-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block;}
+        .result-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+
+        /* Tabla de Items (Estilos genéricos) */
+        .items-table-container { overflow-x: auto; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; min-width: 800px; }
+        .items-table th, .items-table td { border: 1px solid #ddd; padding: 0.8rem; text-align: left; vertical-align: middle;}
+        .items-table th { background-color: #f2f2f2; color: var(--dark-color); font-weight: 600; white-space: nowrap;}
+        .items-table td.actions { text-align: center; white-space: nowrap; }
+        .items-table img.thumbnail { max-width: 80px; max-height: 50px; height: auto; border-radius: 4px; vertical-align: middle; margin-right: 10px; object-fit: cover;}
+        .loading-items { text-align: center; padding: 2rem; color: var(--text-color); }
+        .loading-items i { font-size: 1.5rem; }
+        .no-items-message { display: none; text-align: center; padding: 1rem; color: #6c757d; }
+        .list-error-message { color: var(--danger-color); margin-top: 1rem; display: none; }
+
+        /* Estilos PDF (Aplicable a artículos/casos) */
+        .current-pdf-container {
+            margin-top: -0.5rem; margin-bottom: 1rem; padding: 0.8rem;
+            background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .current-pdf-link {
+            color: var(--primary-color); text-decoration: none; font-weight: 500;
+            word-break: break-all; flex-grow: 1; margin-right: 1rem;
+        }
+         .current-pdf-link i { margin-right: 6px;}
+        .current-pdf-link:hover { text-decoration: underline; }
+        .remove-pdf-button {
+             background-color: var(--danger-color); color: white; border: none;
+             padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 4px;
+             cursor: pointer; margin-left: 1rem; white-space: nowrap; flex-shrink: 0;
+         }
+         .remove-pdf-button:hover { background-color: #c82333; }
+         .pdf-removed-message { font-style: italic; color: var(--danger-color); margin-bottom: 1rem; display: none; }
+
+         /* Estilos para la sección de imagen actual (artículos/casos) */
+        .current-image-container {
+            margin-top: -0.5rem; margin-bottom: 1rem; padding: 0.8rem;
+            background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 1rem; /* Espacio entre elementos */
+        }
+        .current-image-info {
+            display: flex; align-items: center; gap: 10px;
+            flex-grow: 1; overflow: hidden; /* Para evitar que el nombre largo desborde */
+        }
+        .current-image-info img {
+            max-width: 60px; /* Miniatura pequeña */
+            max-height: 40px;
+            height: auto;
+            border-radius: 3px;
+            object-fit: cover;
+        }
+        .current-image-filename {
+            font-weight: 500; color: var(--dark-color);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Cortar nombres largos */
+        }
+        .remove-image-button { /* Botón similar al de PDF */
+             background-color: var(--danger-color); color: white; border: none;
+             padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 4px;
+             cursor: pointer; white-space: nowrap; flex-shrink: 0;
+         }
+         .remove-image-button:hover { background-color: #c82333; }
+         .image-removed-message { font-style: italic; color: var(--danger-color); margin-bottom: 1rem; display: none; }
+
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <h1>Panel de Administración CNEURO</h1>
+        <form method="POST" action="/logout" class="logout-form">
+            <button type="submit"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </form>
+    </header>
+
+    <div class="container">
+
+        <!-- ============================ -->
+        <!--      SECCIÓN ARTÍCULOS       -->
+        <!-- ============================ -->
+        <div class="section-container" id="articlesSectionContainer">
+            <!-- Sección Añadir/Editar Artículo -->
+            <section class="section" id="articleFormSection">
+                <h2 class="section-title" id="articleFormTitle"><i class="fas fa-newspaper"></i> Añadir Nuevo Artículo</h2>
+                <form id="articleForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editArticleId" name="editArticleId">
+
+                    <div class="form-group">
+                        <label for="articleTitle" class="required">Título:</label>
+                        <input type="text" id="articleTitle" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articleCategory" class="required">Categoría:</label>
+                        <select id="articleCategory" name="category" required>
+                            <option value="" disabled selected>-- Selecciona una categoría --</option>
+                            <option value="Neurología">Neurología</option>
+                            <option value="Cardiología">Cardiología</option>
+                            <option value="Oncología">Oncología</option>
+                            <option value="Pediatría">Pediatría</option>
+                            <option value="Medicina Interna">Medicina Interna</option>
+                            <option value="Cirugía">Cirugía</option>
+                            <option value="Salud Pública">Salud Pública</option>
+                            <option value="Investigación">Investigación</option>
+                            <option value="Revisiones">Revisiones</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articleExcerpt" class="required">Extracto (Resumen corto):</label>
+                        <textarea id="articleExcerpt" name="excerpt" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articleFullContent" class="required">Contenido Completo:</label>
+                        <textarea id="articleFullContent" name="full_content" rows="8" required></textarea>
+                        <small class="help-text">Puedes usar HTML básico (p, strong, em, ul, ol, li, h3, img).</small>
+                    </div>
+
+                     <div class="form-group">
+                        <label class="required">Imagen Principal:</label>
+
+                        <!-- Contenedor para imagen actual (subida) -->
+                        <div class="current-image-container" id="articleCurrentImageContainer" style="display: none;">
+                            <span class="current-image-info">
+                                <img id="articleCurrentImagePreview" src="" alt="Actual">
+                                <span id="articleCurrentImageFilename" class="current-image-filename"></span>
+                            </span>
+                            <button type="button" id="articleRemoveImageButton" class="remove-image-button" title="Eliminar imagen actual al guardar"><i class="fas fa-times"></i> Quitar Imagen</button>
+                        </div>
+                         <small class="image-removed-message" id="articleImageRemovedMessage">La imagen actual será eliminada al guardar.</small>
+
+                        <div class="image-option">
+                             <label for="articleImageUrl">Opción 1: Usar URL de imagen externa</label>
+                             <input type="url" id="articleImageUrl" name="image_url" placeholder="https://ejemplo.com/imagen.jpg">
+                             <small class="help-text">Pega la URL o deja vacío para usar archivo subido/eliminar.</small>
+                        </div>
+                         <div class="image-option">
+                            <label for="articleImageFile">Opción 2: Subir archivo de imagen (JPG, PNG, GIF, WEBP)</label>
+                            <input type="file" id="articleImageFile" name="imageFile" accept="image/jpeg, image/png, image/gif, image/webp">
+                            <small class="help-text">Si subes un archivo nuevo, reemplazará la imagen actual (URL o archivo).</small>
+                        </div>
+                         <small class="error-text" id="articleImageError"></small>
+                         <!-- Campo oculto para marcar borrado de imagen -->
+                         <input type="hidden" id="articleRemoveCurrentImage" name="removeCurrentImage" value="false">
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="articleAuthor" class="required">Autor:</label>
+                        <input type="text" id="articleAuthor" name="author" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articlePublishDate" class="required">Fecha de Publicación:</label>
+                        <input type="date" id="articlePublishDate" name="publish_date" required > <!-- Readonly se maneja con JS -->
+                        <small class="help-text" id="articlePublishDateHelpText">La fecha seleccionada no puede ser anterior a hoy.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articlePdfFile">Archivo PDF (Opcional):</label>
+                        <div class="current-pdf-container" id="articleCurrentPdfContainer" style="display: none;">
+                            <span>Actual:
+                                <a href="#" id="articleCurrentPdfLink" class="current-pdf-link" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-file-pdf"></i> <span id="articleCurrentPdfFilename"></span>
+                                </a>
+                            </span>
+                            <button type="button" id="articleRemovePdfButton" class="remove-pdf-button" title="Eliminar PDF actual al guardar"><i class="fas fa-times"></i> Quitar PDF</button>
+                        </div>
+                        <small class="pdf-removed-message" id="articlePdfRemovedMessage">El PDF actual será eliminado al guardar.</small>
+                        <input type="file" id="articlePdfFile" name="pdfFile" accept="application/pdf">
+                        <small class="help-text">Sube un archivo para añadir o reemplazar el PDF existente.</small>
+                        <input type="hidden" id="articleRemoveCurrentPdf" name="removeCurrentPdf" value="false">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-submit" id="articleSubmitButton"><i class="fas fa-plus-circle"></i> Añadir Artículo</button>
+                        <button type="button" class="btn btn-cancel" id="articleCancelEditButton" style="display: none;"><i class="fas fa-times"></i> Cancelar Edición</button>
+                    </div>
+                </form>
+                <div class="result-message" id="articlePostResult"></div>
+            </section>
+
+            <!-- Sección Gestionar Artículos -->
+            <section class="section">
+                <h2 class="section-title"><i class="fas fa-list-alt"></i> Gestionar Artículos Existentes</h2>
+                <div class="items-table-container">
+                    <div class="loading-items" id="loadingArticlesMessage">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando artículos...
+                    </div>
+                    <table class="items-table" id="articlesTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Título</th>
+                                <th>Categoría</th>
+                                <th>Autor</th>
+                                <th>Fecha Pub.</th>
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="articlesTableBody">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                    <p class="no-items-message" id="noArticlesMessage">No hay artículos para mostrar.</p>
+                </div>
+                 <div class="list-error-message" id="articleListError"></div>
+            </section>
+        </div> <!-- Fin section-container Artículos -->
+
+        <!-- ============================ -->
+        <!--    SECCIÓN CASOS CLÍNICOS    -->
+        <!-- ============================ -->
+        <div class="section-container" id="casesSectionContainer">
+             <!-- Sección Añadir/Editar Caso Clínico -->
+            <section class="section" id="caseFormSection">
+                <h2 class="section-title" id="caseFormTitle"><i class="fas fa-notes-medical"></i> Añadir Nuevo Caso Clínico</h2>
+                <form id="caseForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editCaseId" name="editCaseId">
+
+                    <div class="form-group">
+                        <label for="caseTitle" class="required">Título del Caso:</label>
+                        <input type="text" id="caseTitle" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caseCategory" class="required">Categoría Médica:</label>
+                         <select id="caseCategory" name="category" required>
+                             <option value="" disabled selected>-- Selecciona una categoría --</option>
+                             <option value="Neurología">Neurología</option>
+                             <option value="Cardiología">Cardiología</option>
+                             <option value="Oncología">Oncología</option>
+                             <option value="Pediatría">Pediatría</option>
+                             <option value="Medicina Interna">Medicina Interna</option>
+                             <option value="Cirugía">Cirugía</option>
+                             <option value="Salud Pública">Salud Pública</option>
+                             <option value="Radiología">Radiología</option>
+                             <option value="Dermatología">Dermatología</option>
+                             <option value="Otra">Otra</option>
+                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caseExcerpt" class="required">Extracto (Resumen corto):</label>
+                        <textarea id="caseExcerpt" name="excerpt" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caseFullContent" class="required">Descripción Completa del Caso:</label>
+                        <textarea id="caseFullContent" name="full_content" rows="10" required></textarea>
+                         <small class="help-text">Puedes usar HTML básico (p, strong, em, ul, ol, li, h3, img).</small>
+                    </div>
+
+                     <div class="form-group">
+                        <label class="required">Imagen Principal:</label>
+
+                        <!-- Contenedor para imagen actual (subida) -->
+                        <div class="current-image-container" id="caseCurrentImageContainer" style="display: none;">
+                            <span class="current-image-info">
+                                <img id="caseCurrentImagePreview" src="" alt="Actual">
+                                <span id="caseCurrentImageFilename" class="current-image-filename"></span>
+                            </span>
+                            <button type="button" id="caseRemoveImageButton" class="remove-image-button" title="Eliminar imagen actual al guardar"><i class="fas fa-times"></i> Quitar Imagen</button>
+                        </div>
+                        <small class="image-removed-message" id="caseImageRemovedMessage">La imagen actual será eliminada al guardar.</small>
+
+                        <div class="image-option">
+                             <label for="caseImageUrl">Opción 1: Usar URL de imagen externa</label>
+                             <input type="url" id="caseImageUrl" name="image_url" placeholder="https://ejemplo.com/imagen.jpg">
+                             <small class="help-text">Pega la URL o deja vacío para usar archivo subido/eliminar.</small>
+                        </div>
+                         <div class="image-option">
+                            <label for="caseImageFile">Opción 2: Subir archivo de imagen (JPG, PNG, GIF, WEBP)</label>
+                            <input type="file" id="caseImageFile" name="imageFile" accept="image/jpeg, image/png, image/gif, image/webp">
+                            <small class="help-text">Si subes un archivo nuevo, reemplazará la imagen actual (URL o archivo).</small>
+                        </div>
+                         <small class="error-text" id="caseImageError"></small>
+                         <!-- Campo oculto para marcar borrado de imagen -->
+                         <input type="hidden" id="caseRemoveCurrentImage" name="removeCurrentImage" value="false">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caseAuthor" class="required">Autor(es):</label>
+                        <input type="text" id="caseAuthor" name="author" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="casePublishDate" class="required">Fecha de Publicación:</label>
+                        <input type="date" id="casePublishDate" name="publish_date" required > <!-- Readonly se maneja con JS -->
+                         <small class="help-text" id="casePublishDateHelpText">La fecha seleccionada no puede ser anterior a hoy.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="casePdfFile">Archivo PDF Adicional (Opcional):</label>
+                        <div class="current-pdf-container" id="caseCurrentPdfContainer" style="display: none;">
+                           <span>Actual:
+                                <a href="#" id="caseCurrentPdfLink" class="current-pdf-link" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-file-pdf"></i> <span id="caseCurrentPdfFilename"></span>
+                                </a>
+                            </span>
+                            <button type="button" id="caseRemovePdfButton" class="remove-pdf-button" title="Eliminar PDF actual al guardar"><i class="fas fa-times"></i> Quitar PDF</button>
+                        </div>
+                        <small class="pdf-removed-message" id="casePdfRemovedMessage">El PDF actual será eliminado al guardar.</small>
+                        <input type="file" id="casePdfFile" name="pdfFile" accept="application/pdf">
+                        <small class="help-text">Sube un archivo para añadir o reemplazar el PDF existente.</small>
+                        <input type="hidden" id="caseRemoveCurrentPdf" name="removeCurrentPdf" value="false">
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-submit" id="caseSubmitButton"><i class="fas fa-plus-circle"></i> Añadir Caso Clínico</button>
+                        <button type="button" class="btn btn-cancel" id="caseCancelEditButton" style="display: none;"><i class="fas fa-times"></i> Cancelar Edición</button>
+                    </div>
+                </form>
+                 <div class="result-message" id="casePostResult"></div>
+            </section>
+
+             <!-- Sección Gestionar Casos Clínicos -->
+            <section class="section">
+                 <h2 class="section-title"><i class="fas fa-list-ul"></i> Gestionar Casos Clínicos Existentes</h2>
+                 <div class="items-table-container">
+                    <div class="loading-items" id="loadingCasesMessage">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando casos clínicos...
+                    </div>
+                    <table class="items-table" id="casesTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Título</th>
+                                <th>Categoría</th>
+                                <th>Autor</th>
+                                <th>Fecha Pub.</th>
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="casesTableBody">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                     <p class="no-items-message" id="noCasesMessage">No hay casos clínicos para mostrar.</p>
+                </div>
+                  <div class="list-error-message" id="caseListError"></div>
+            </section>
+        </div> <!-- Fin section-container Casos -->
+
+        <!-- ============================ -->
+        <!--      SECCIÓN NOTICIAS        -->
+        <!-- ============================ -->
+        <div class="section-container" id="newsSectionContainer">
+            <!-- Sección Añadir/Editar Noticia -->
+            <section class="section" id="newsFormSection">
+                <h2 class="section-title" id="newsFormTitle"><i class="fas fa-bullhorn"></i> Añadir Nueva Noticia</h2>
+                <form id="newsForm"> <!-- No necesita enctype si no subes archivos aquí -->
+                    <input type="hidden" id="editNewsId" name="editNewsId">
+
+                    <div class="form-group">
+                        <label for="newsTitle" class="required">Título de la Noticia:</label>
+                        <input type="text" id="newsTitle" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsContent" class="required">Contenido/Descripción:</label>
+                        <textarea id="newsContent" name="content" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsImageUrl">URL de Imagen (Opcional):</label>
+                        <input type="url" id="newsImageUrl" name="image_url" placeholder="https://ejemplo.com/imagen_noticia.jpg">
+                         <small class="help-text">Pega una URL completa si deseas mostrar una imagen.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsLink">Enlace (Opcional):</label>
+                        <input type="url" id="newsLink" name="link" placeholder="/post.html?id=123 o https://externo.com">
+                         <small class="help-text">Enlace relativo (ej. /post.html?id=...) o URL completa.</small>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-submit" id="newsSubmitButton"><i class="fas fa-plus-circle"></i> Añadir Noticia</button>
+                        <button type="button" class="btn btn-cancel" id="newsCancelEditButton" style="display: none;"><i class="fas fa-times"></i> Cancelar Edición</button>
+                    </div>
+                </form>
+                <div class="result-message" id="newsPostResult"></div>
+            </section>
+
+            <!-- Sección Gestionar Noticias -->
+            <section class="section">
+                <h2 class="section-title"><i class="fas fa-list"></i> Gestionar Noticias Existentes</h2>
+                <div class="items-table-container">
+                    <div class="loading-items" id="loadingNewsMessage">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando noticias...
+                    </div>
+                    <table class="items-table" id="newsTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Contenido (Extracto)</th>
+                                <th>Enlace</th>
+                                <th>Fecha Pub.</th>
+                                <th class="actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newsTableBody">
+                            <!-- Filas generadas por JS -->
+                        </tbody>
+                    </table>
+                    <p class="no-items-message" id="noNewsMessage">No hay noticias para mostrar.</p>
+                </div>
+                 <div class="list-error-message" id="newsListError"></div>
+            </section>
+        </div> <!-- Fin section-container Noticias -->
+
+
+    </div> <!-- Fin container principal -->
+
+    <script>
+        // --- Constantes Generales ---
+        const API_BASE_ARTICLES = '/api/admin/articles'; // Ruta admin para POST, PUT, DELETE artículos
+        const API_BASE_CASES = '/api/admin/cases';       // Ruta admin para POST, PUT, DELETE casos
+        const API_BASE_NEWS = '/api/admin/news';         // Ruta admin para POST, PUT, DELETE noticias
+        const API_GET_ARTICLES = '/api/articles';        // Ruta PÚBLICA para GET lista artículos
+        const API_GET_CASES = '/api/cases';            // Ruta PÚBLICA para GET lista casos
+        const API_GET_ARTICLE = '/api/articles';        // Ruta PÚBLICA para GET un artículo (se añade /:id)
+        const API_GET_CASE = '/api/cases';            // Ruta PÚBLICA para GET un caso (se añade /:id)
+        const API_GET_NEWS = '/api/admin/news';        // Ruta ADMIN para GET lista noticias (más info que la pública)
+
+
+        // --- Elementos DOM - Artículos ---
+        const articleForm = document.getElementById('articleForm');
+        const articleFormTitle = document.getElementById('articleFormTitle');
+        const articleSubmitButton = document.getElementById('articleSubmitButton');
+        const articleCancelEditButton = document.getElementById('articleCancelEditButton');
+        const articleResultDiv = document.getElementById('articlePostResult');
+        const editArticleIdInput = document.getElementById('editArticleId');
+        const articleImageUrlInput = document.getElementById('articleImageUrl');
+        const articleImageFileInput = document.getElementById('articleImageFile');
+        const articleImageError = document.getElementById('articleImageError');
+        const articlePublishDateInput = document.getElementById('articlePublishDate');
+        const articlePublishDateHelpText = document.getElementById('articlePublishDateHelpText');
+        const articleCurrentPdfContainer = document.getElementById('articleCurrentPdfContainer');
+        const articleCurrentPdfLink = document.getElementById('articleCurrentPdfLink');
+        const articleCurrentPdfFilename = document.getElementById('articleCurrentPdfFilename');
+        const articleRemovePdfButton = document.getElementById('articleRemovePdfButton');
+        const articleRemoveCurrentPdfInput = document.getElementById('articleRemoveCurrentPdf');
+        const articlePdfFileInput = document.getElementById('articlePdfFile');
+        const articlePdfRemovedMessage = document.getElementById('articlePdfRemovedMessage');
+        const articlesTableBody = document.getElementById('articlesTableBody');
+        const articlesTable = document.getElementById('articlesTable');
+        const loadingArticlesMessage = document.getElementById('loadingArticlesMessage');
+        const noArticlesMessage = document.getElementById('noArticlesMessage');
+        const articleListErrorDiv = document.getElementById('articleListError');
+        const articleFormSection = document.getElementById('articleFormSection');
+        const articleCurrentImageContainer = document.getElementById('articleCurrentImageContainer');
+        const articleCurrentImagePreview = document.getElementById('articleCurrentImagePreview');
+        const articleCurrentImageFilename = document.getElementById('articleCurrentImageFilename');
+        const articleRemoveImageButton = document.getElementById('articleRemoveImageButton');
+        const articleRemoveCurrentImageInput = document.getElementById('articleRemoveCurrentImage');
+        const articleImageRemovedMessage = document.getElementById('articleImageRemovedMessage');
+
+        // --- Elementos DOM - Casos Clínicos ---
+        const caseForm = document.getElementById('caseForm');
+        const caseFormTitle = document.getElementById('caseFormTitle');
+        const caseSubmitButton = document.getElementById('caseSubmitButton');
+        const caseCancelEditButton = document.getElementById('caseCancelEditButton');
+        const caseResultDiv = document.getElementById('casePostResult');
+        const editCaseIdInput = document.getElementById('editCaseId');
+        const caseImageUrlInput = document.getElementById('caseImageUrl');
+        const caseImageFileInput = document.getElementById('caseImageFile');
+        const caseImageError = document.getElementById('caseImageError');
+        const casePublishDateInput = document.getElementById('casePublishDate');
+        const casePublishDateHelpText = document.getElementById('casePublishDateHelpText');
+        const caseCurrentPdfContainer = document.getElementById('caseCurrentPdfContainer');
+        const caseCurrentPdfLink = document.getElementById('caseCurrentPdfLink');
+        const caseCurrentPdfFilename = document.getElementById('caseCurrentPdfFilename');
+        const caseRemovePdfButton = document.getElementById('caseRemovePdfButton');
+        const caseRemoveCurrentPdfInput = document.getElementById('caseRemoveCurrentPdf');
+        const casePdfFileInput = document.getElementById('casePdfFile');
+        const casePdfRemovedMessage = document.getElementById('casePdfRemovedMessage');
+        const casesTableBody = document.getElementById('casesTableBody');
+        const casesTable = document.getElementById('casesTable');
+        const loadingCasesMessage = document.getElementById('loadingCasesMessage');
+        const noCasesMessage = document.getElementById('noCasesMessage');
+        const caseListErrorDiv = document.getElementById('caseListError');
+        const caseFormSection = document.getElementById('caseFormSection');
+        const caseCurrentImageContainer = document.getElementById('caseCurrentImageContainer');
+        const caseCurrentImagePreview = document.getElementById('caseCurrentImagePreview');
+        const caseCurrentImageFilename = document.getElementById('caseCurrentImageFilename');
+        const caseRemoveImageButton = document.getElementById('caseRemoveImageButton');
+        const caseRemoveCurrentImageInput = document.getElementById('caseRemoveCurrentImage');
+        const caseImageRemovedMessage = document.getElementById('caseImageRemovedMessage');
+
+        // --- Elementos DOM - Noticias ---
+        const newsForm = document.getElementById('newsForm');
+        const newsFormTitle = document.getElementById('newsFormTitle');
+        const newsSubmitButton = document.getElementById('newsSubmitButton');
+        const newsCancelEditButton = document.getElementById('newsCancelEditButton');
+        const newsResultDiv = document.getElementById('newsPostResult');
+        const editNewsIdInput = document.getElementById('editNewsId');
+        const newsTableBody = document.getElementById('newsTableBody');
+        const newsTable = document.getElementById('newsTable');
+        const loadingNewsMessage = document.getElementById('loadingNewsMessage');
+        const noNewsMessage = document.getElementById('noNewsMessage');
+        const newsListErrorDiv = document.getElementById('newsListError');
+        const newsFormSection = document.getElementById('newsFormSection');
+        const newsTitleInput = document.getElementById('newsTitle');
+        const newsContentInput = document.getElementById('newsContent');
+        const newsImageUrlInput = document.getElementById('newsImageUrl');
+        const newsLinkInput = document.getElementById('newsLink');
+
+
+        // --- Funciones Auxiliares Comunes ---
+        function formatDateForInput(date) {
+            if (!date) return '';
+            const d = date instanceof Date ? date : new Date(date);
+            if (isNaN(d.getTime())) return '';
+            // Formato YYYY-MM-DD
+            return d.toISOString().split('T')[0];
+        }
+
+        function showResultMessage(element, message, isSuccess) {
+            if (!element) return;
+            element.textContent = message;
+            element.className = 'result-message ' + (isSuccess ? 'success' : 'error');
+            element.style.display = 'block';
+            // Ocultar mensaje después de un tiempo
+            setTimeout(() => {
+                 if(element) {
+                    element.style.display = 'none';
+                    element.textContent = '';
+                    element.className = 'result-message';
+                 }
+            }, 6000); // Ocultar después de 6 segundos
+        }
+
+        function getFilenameFromUrl(url) {
+             if (!url) return 'archivo';
+             try {
+                // Decodificar URL por si tiene caracteres especiales (%20, etc.)
+                 const decodedUrl = decodeURIComponent(url);
+                 // Obtener la última parte de la ruta
+                 const urlParts = decodedUrl.split('/');
+                 return urlParts[urlParts.length - 1] || 'archivo';
+             } catch (e) {
+                console.warn("Could not parse filename from URL:", url, e);
+                return 'archivo'; // Fallback
+             }
+        }
+
+        // --- Funciones Específicas para Artículos ---
+
+        function resetArticleForm() {
+            articleForm.reset(); // Resetea campos nativos del form
+            editArticleIdInput.value = ''; // Limpia ID oculto
+            articleFormTitle.innerHTML = '<i class="fas fa-newspaper"></i> Añadir Nuevo Artículo';
+            articleSubmitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Añadir Artículo';
+            articleSubmitButton.disabled = false;
+            articleCancelEditButton.style.display = 'none'; // Ocultar botón cancelar
+            articleResultDiv.style.display = 'none'; // Ocultar mensajes previos
+            articleImageError.textContent = ''; // Limpiar errores de imagen
+
+            // Reset Imagen
+            articleCurrentImageContainer.style.display = 'none'; // Ocultar contenedor imagen actual
+            articleImageUrlInput.value = ''; // Limpiar campo URL
+            articleImageFileInput.value = null; // Limpiar campo archivo (importante!)
+            articleRemoveCurrentImageInput.value = 'false'; // Resetear bandera borrado
+            articleImageRemovedMessage.style.display = 'none'; // Ocultar mensaje borrado
+
+            // Reset Fecha
+            const todayStr = formatDateForInput(new Date());
+            articlePublishDateInput.value = todayStr; // Fecha por defecto hoy
+            articlePublishDateInput.min = todayStr; // Mínimo hoy
+            articlePublishDateInput.readOnly = false; // Permitir edición
+            articlePublishDateHelpText.textContent = 'La fecha seleccionada no puede ser anterior a hoy.';
+            articlePublishDateHelpText.style.color = '#6c757d'; // Color normal ayuda
+
+            // Reset PDF
+            articleCurrentPdfContainer.style.display = 'none'; // Ocultar PDF actual
+            articleRemovePdfButton.style.display = 'inline-block'; // Asegurar que el botón quitar sea visible si aparece el contenedor
+            articleRemoveCurrentPdfInput.value = 'false'; // Resetear bandera borrado
+            articlePdfRemovedMessage.style.display = 'none'; // Ocultar mensaje borrado
+            articlePdfFileInput.value = null; // Limpiar campo archivo PDF
+        }
+
+        async function populateArticleFormForEdit(articleId) {
+            resetArticleForm(); // Limpiar formulario antes de poblar
+            articleFormTitle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando Artículo...';
+            articleSubmitButton.disabled = true; // Deshabilitar mientras carga
+
+            try {
+                const response = await fetch(`${API_GET_ARTICLE}/${articleId}`); // Usar ruta pública GET
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({})); // Intentar obtener mensaje de error
+                    throw new Error(errorData.message || `Error al cargar artículo: ${response.statusText}`);
+                }
+                const article = await response.json();
+
+                // Poblar campos del formulario
+                editArticleIdInput.value = article.id;
+                document.getElementById('articleTitle').value = article.title || '';
+                document.getElementById('articleCategory').value = article.category || '';
+                document.getElementById('articleExcerpt').value = article.excerpt || '';
+                document.getElementById('articleFullContent').value = article.full_content || '';
+                document.getElementById('articleAuthor').value = article.author || '';
+
+                // Configurar Imagen
+                articleImageUrlInput.value = ''; // Limpiar input URL
+                articleCurrentImageContainer.style.display = 'none'; // Ocultar por defecto
+                articleRemoveCurrentImageInput.value = 'false';
+                articleImageRemovedMessage.style.display = 'none';
+                if (article.image_url) {
+                    if (article.image_url.startsWith('/uploads/')) { // Si es una imagen subida
+                        articleCurrentImagePreview.src = article.image_url;
+                        articleCurrentImageFilename.textContent = getFilenameFromUrl(article.image_url);
+                        articleCurrentImageContainer.style.display = 'flex'; // Mostrar contenedor
+                    } else { // Si es una URL externa
+                        articleImageUrlInput.value = article.image_url;
+                    }
+                }
+
+                // Configurar Fecha (Readonly en modo edición)
+                articlePublishDateInput.value = formatDateForInput(article.publish_date);
+                articlePublishDateInput.readOnly = true; // Bloquear cambio de fecha original
+                articlePublishDateInput.min = ''; // Quitar restricción mínima
+                articlePublishDateHelpText.textContent = 'La fecha de publicación original no se puede modificar.';
+                articlePublishDateHelpText.style.color = '#6c757d';
+
+                // Configurar PDF
+                 articleCurrentPdfContainer.style.display = 'none'; // Ocultar por defecto
+                 articleRemoveCurrentPdfInput.value = 'false';
+                 articlePdfRemovedMessage.style.display = 'none';
+                 articleRemovePdfButton.style.display = 'inline-block'; // Asegurar que esté visible
+                if (article.pdf_url) {
+                    articleCurrentPdfLink.href = article.pdf_url;
+                    articleCurrentPdfFilename.textContent = getFilenameFromUrl(article.pdf_url);
+                    articleCurrentPdfContainer.style.display = 'flex'; // Mostrar si hay PDF
+                }
+
+                // Actualizar UI del formulario a modo edición
+                articleFormTitle.innerHTML = `<i class="fas fa-edit"></i> Editando Artículo: ${article.title || `ID ${article.id}`}`;
+                articleSubmitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+                articleCancelEditButton.style.display = 'inline-block'; // Mostrar botón cancelar
+                articleSubmitButton.disabled = false; // Habilitar botón guardar
+
+                // Scroll hacia el formulario para visibilidad
+                window.scrollTo({ top: articleFormSection.offsetTop - 80, behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error al poblar formulario de artículo:', error);
+                showResultMessage(articleResultDiv, `No se pudieron cargar datos del artículo: ${error.message}`, false);
+                resetArticleForm(); // Resetear si falla la carga
+            }
+        }
+
+        async function loadArticles() {
+            loadingArticlesMessage.style.display = 'block'; // Mostrar carga
+            articlesTable.style.display = 'none'; // Ocultar tabla
+            noArticlesMessage.style.display = 'none'; // Ocultar "sin resultados"
+            articlesTableBody.innerHTML = ''; // Limpiar tabla
+            articleListErrorDiv.style.display = 'none'; // Ocultar errores previos
+
+            try {
+                const response = await fetch(API_GET_ARTICLES); // GET público
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error al cargar artículos: ${response.statusText}`);
+                }
+                const articles = await response.json(); // Obtener lista de artículos
+
+                loadingArticlesMessage.style.display = 'none'; // Ocultar carga
+
+                if (articles.length === 0) {
+                    noArticlesMessage.style.display = 'block'; // Mostrar "sin resultados"
+                } else {
+                    articlesTable.style.display = 'table'; // Mostrar tabla
+                    articles.forEach(article => {
+                        const row = articlesTableBody.insertRow();
+                        const formattedDate = article.publish_date ? new Date(article.publish_date).toLocaleDateString('es-ES', {day: '2-digit', month:'2-digit', year:'numeric'}) : 'N/A';
+                        const imageUrl = article.image_url || '/placeholder.png'; // Usar placeholder si no hay imagen
+                        const shortTitle = article.title && article.title.length > 40 ? article.title.substring(0, 37) + '...' : (article.title || 'Sin Título');
+
+                        row.innerHTML = `
+                            <td><img src="${imageUrl}" alt="Miniatura" class="thumbnail" onerror="this.onerror=null;this.src='/placeholder.png'; this.alt='Error';"></td>
+                            <td title="${article.title || ''}">${shortTitle}</td>
+                            <td>${article.category || 'N/A'}</td>
+                            <td>${article.author || 'N/A'}</td>
+                            <td>${formattedDate}</td>
+                            <td class="actions">
+                                <button class="btn btn-edit article-edit-btn" data-id="${article.id}" title="Editar Artículo"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-delete article-delete-btn" data-id="${article.id}" title="Eliminar Artículo"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando artículos:', error);
+                loadingArticlesMessage.style.display = 'none'; // Ocultar carga
+                articleListErrorDiv.textContent = `Error al cargar lista de artículos: ${error.message}`;
+                articleListErrorDiv.style.display = 'block'; // Mostrar error
+            }
+        }
+
+        async function handleArticleFormSubmit(event) {
+            event.preventDefault(); // Prevenir envío normal
+            if (articleSubmitButton.disabled) return; // Evitar doble submit
+
+            articleSubmitButton.disabled = true; // Deshabilitar botón
+            articleSubmitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            articleResultDiv.style.display = 'none'; // Ocultar mensajes previos
+            articleImageError.textContent = ''; // Limpiar error imagen
+
+            const articleId = editArticleIdInput.value;
+            const isEditing = !!articleId;
+            const url = isEditing ? `${API_BASE_ARTICLES}/${articleId}` : API_BASE_ARTICLES;
+            const method = isEditing ? 'PUT' : 'POST';
+
+             // Validaciones Frontend antes de enviar
+             if (!isEditing) { // Solo para creación
+                 const selectedDate = new Date(articlePublishDateInput.value + 'T00:00:00.000Z');
+                 const today = new Date(); today.setUTCHours(0,0,0,0);
+                 if (isNaN(selectedDate.getTime()) || selectedDate < today) {
+                     showResultMessage(articleResultDiv, 'La fecha de publicación no puede ser anterior a hoy.', false);
+                     articleSubmitButton.disabled = false; // Reactivar botón
+                     articleSubmitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Añadir Artículo';
+                     return; // Detener envío
+                 }
+             }
+             // Validación de Imagen (más robusta)
+             const hasExternalUrl = articleImageUrlInput.value && articleImageUrlInput.value.trim() !== '';
+             const hasFile = articleImageFileInput.files.length > 0;
+             const hasExistingImage = articleCurrentImageContainer.style.display === 'flex';
+             const isRemovingImage = articleRemoveCurrentImageInput.value === 'true';
+
+             if (!hasExternalUrl && !hasFile && !(isEditing && hasExistingImage && !isRemovingImage)) {
+                 articleImageError.textContent = 'Se requiere una imagen (URL externa o archivo subido).';
+                 articleSubmitButton.disabled = false; // Reactivar botón
+                 articleSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Artículo';
+                 return; // Detener envío
+             }
+             // Validar URL si se provee
+              if (hasExternalUrl) {
+                   try {
+                       const parsed = new URL(articleImageUrlInput.value.trim());
+                       if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Protocolo inválido');
+                   } catch (e) {
+                       articleImageError.textContent = 'La URL de la imagen externa no es válida (debe empezar con http:// o https://).';
+                       articleSubmitButton.disabled = false; articleSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Artículo'; return;
+                   }
+              }
+
+            const formData = new FormData(articleForm); // Recoger datos del formulario
+
+            try {
+                const response = await fetch(url, { method: method, body: formData });
+                // Intentar leer como JSON siempre
+                const resultData = await response.json().catch(e => {
+                    // Si falla el JSON.parse, podría ser HTML u otro error
+                    console.error("Failed to parse JSON response", e);
+                    // Usamos el statusText si está disponible
+                    return { message: `Respuesta no válida del servidor (Estado: ${response.status} ${response.statusText})` };
+                 });
+
+
+                if (response.ok) {
+                    const successMessage = isEditing ? `Artículo "${resultData.title || 'seleccionado'}" actualizado con éxito.` : `Artículo "${resultData.title || 'nuevo'}" añadido con éxito.`;
+                    showResultMessage(articleResultDiv, successMessage, true);
+                    resetArticleForm(); // Limpiar formulario
+                    loadArticles(); // Recargar lista
+                } else {
+                    // Mostrar mensaje de error del servidor si existe, sino mensaje genérico
+                    showResultMessage(articleResultDiv, `Error: ${resultData.message || response.statusText || 'Ocurrió un error desconocido'}`, false);
+                }
+            } catch (error) {
+                 // Error de red u otro error inesperado
+                 console.error('Error al enviar formulario de artículo:', error);
+                 showResultMessage(articleResultDiv, 'Error de red o del servidor al intentar guardar el artículo.', false);
+            } finally {
+                 // Reactivar botón solo si NO hubo éxito (para permitir reintentos)
+                 if (!articleResultDiv.classList.contains('success')) {
+                     articleSubmitButton.disabled = false;
+                     articleSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Artículo';
+                 }
+            }
+        }
+
+        async function deleteArticle(articleId, buttonElement) {
+            const originalButtonContent = buttonElement.innerHTML; // Guardar contenido original (icono)
+            buttonElement.disabled = true; // Deshabilitar botón
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Mostrar spinner
+
+            try {
+                const response = await fetch(`${API_BASE_ARTICLES}/${articleId}`, { method: 'DELETE' });
+                const resultData = await response.json().catch(() => ({ message: `Error ${response.status}: ${response.statusText}` })); // Intentar parsear error
+
+                if (response.ok) {
+                    showResultMessage(articleResultDiv, resultData.message || `Artículo ${articleId} eliminado.`, true); // Mostrar éxito
+                    const row = buttonElement.closest('tr'); // Encontrar la fila
+                    if (row) row.remove(); // Eliminar fila de la tabla
+                    // Verificar si la tabla quedó vacía
+                    if (articlesTableBody.rows.length === 0) {
+                        articlesTable.style.display = 'none';
+                        noArticlesMessage.style.display = 'block';
+                    }
+                    // Si se eliminó el artículo que se estaba editando, resetear form
+                    if (String(editArticleIdInput.value) === String(articleId)) {
+                        resetArticleForm();
+                    }
+                } else {
+                    // Mostrar error
+                    showResultMessage(articleResultDiv, `Error al eliminar artículo: ${resultData.message || 'Error desconocido'}`, false);
+                    buttonElement.disabled = false; // Reactivar botón
+                    buttonElement.innerHTML = originalButtonContent; // Restaurar icono
+                }
+            } catch (error) {
+                 // Error de red
+                 console.error('Error de red al eliminar artículo:', error);
+                 showResultMessage(articleResultDiv, 'Error de red o del servidor al intentar eliminar el artículo.', false);
+                 buttonElement.disabled = false; // Reactivar botón
+                 buttonElement.innerHTML = originalButtonContent; // Restaurar icono
+            }
+        }
+
+        // --- Funciones Específicas para Casos Clínicos ---
+
+        function resetCaseForm() {
+            caseForm.reset();
+            editCaseIdInput.value = '';
+            caseFormTitle.innerHTML = '<i class="fas fa-notes-medical"></i> Añadir Nuevo Caso Clínico';
+            caseSubmitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Añadir Caso Clínico';
+            caseSubmitButton.disabled = false;
+            caseCancelEditButton.style.display = 'none';
+            caseResultDiv.style.display = 'none';
+            caseImageError.textContent = '';
+
+            // Reset Imagen
+            caseCurrentImageContainer.style.display = 'none';
+            caseImageUrlInput.value = '';
+            caseImageFileInput.value = null;
+            caseRemoveCurrentImageInput.value = 'false';
+            caseImageRemovedMessage.style.display = 'none';
+
+            // Reset Fecha
+            const todayStr = formatDateForInput(new Date());
+            casePublishDateInput.value = todayStr;
+            casePublishDateInput.min = todayStr;
+            casePublishDateInput.readOnly = false;
+            casePublishDateHelpText.textContent = 'La fecha seleccionada no puede ser anterior a hoy.';
+            casePublishDateHelpText.style.color = '#6c757d';
+
+            // Reset PDF
+            caseCurrentPdfContainer.style.display = 'none';
+            caseRemovePdfButton.style.display = 'inline-block';
+            caseRemoveCurrentPdfInput.value = 'false';
+            casePdfRemovedMessage.style.display = 'none';
+            casePdfFileInput.value = null;
+        }
+
+        async function populateCaseFormForEdit(caseId) {
+             resetCaseForm();
+             caseFormTitle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando Caso...';
+             caseSubmitButton.disabled = true;
+
+             try {
+                 const response = await fetch(`${API_GET_CASE}/${caseId}`); // GET público
+                 if (!response.ok) {
+                     const errorData = await response.json().catch(() => ({}));
+                     throw new Error(errorData.message || `Error al cargar caso: ${response.statusText}`);
+                 }
+                 const caseData = await response.json();
+
+                 // Poblar campos
+                 editCaseIdInput.value = caseData.id;
+                 document.getElementById('caseTitle').value = caseData.title || '';
+                 document.getElementById('caseCategory').value = caseData.category || '';
+                 document.getElementById('caseExcerpt').value = caseData.excerpt || '';
+                 document.getElementById('caseFullContent').value = caseData.full_content || '';
+                 document.getElementById('caseAuthor').value = caseData.author || '';
+
+                 // Configurar Imagen
+                 caseImageUrlInput.value = '';
+                 caseCurrentImageContainer.style.display = 'none';
+                 caseRemoveCurrentImageInput.value = 'false';
+                 caseImageRemovedMessage.style.display = 'none';
+                 if (caseData.image_url) {
+                     if (caseData.image_url.startsWith('/uploads/')) {
+                         caseCurrentImagePreview.src = caseData.image_url;
+                         caseCurrentImageFilename.textContent = getFilenameFromUrl(caseData.image_url);
+                         caseCurrentImageContainer.style.display = 'flex';
+                     } else {
+                         caseImageUrlInput.value = caseData.image_url;
+                     }
+                 }
+
+                 // Configurar Fecha (Readonly)
+                 casePublishDateInput.value = formatDateForInput(caseData.publish_date);
+                 casePublishDateInput.readOnly = true;
+                 casePublishDateInput.min = '';
+                 casePublishDateHelpText.textContent = 'La fecha de publicación original no se puede modificar.';
+                 casePublishDateHelpText.style.color = '#6c757d';
+
+                 // Configurar PDF
+                 caseCurrentPdfContainer.style.display = 'none';
+                 caseRemoveCurrentPdfInput.value = 'false';
+                 casePdfRemovedMessage.style.display = 'none';
+                 caseRemovePdfButton.style.display = 'inline-block';
+                 if (caseData.pdf_url) {
+                    caseCurrentPdfLink.href = caseData.pdf_url;
+                    caseCurrentPdfFilename.textContent = getFilenameFromUrl(caseData.pdf_url);
+                    caseCurrentPdfContainer.style.display = 'flex';
+                 }
+
+                 // Actualizar UI del formulario
+                 caseFormTitle.innerHTML = `<i class="fas fa-edit"></i> Editando Caso: ${caseData.title || `ID ${caseData.id}`}`;
+                 caseSubmitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+                 caseCancelEditButton.style.display = 'inline-block';
+                 caseSubmitButton.disabled = false;
+
+                 window.scrollTo({ top: caseFormSection.offsetTop - 80, behavior: 'smooth' });
+
+             } catch (error) {
+                 console.error('Error al poblar formulario de caso:', error);
+                 showResultMessage(caseResultDiv, `No se pudieron cargar datos del caso: ${error.message}`, false);
+                 resetCaseForm();
+             }
+        }
+
+        async function loadCases() {
+            loadingCasesMessage.style.display = 'block';
+            casesTable.style.display = 'none';
+            noCasesMessage.style.display = 'none';
+            casesTableBody.innerHTML = '';
+            caseListErrorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(API_GET_CASES); // GET público
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error al cargar casos: ${response.statusText}`);
+                }
+                const cases = await response.json();
+
+                loadingCasesMessage.style.display = 'none';
+
+                if (cases.length === 0) {
+                    noCasesMessage.style.display = 'block';
+                } else {
+                    casesTable.style.display = 'table';
+                    cases.forEach(caseData => {
+                        const row = casesTableBody.insertRow();
+                         const formattedDate = caseData.publish_date ? new Date(caseData.publish_date).toLocaleDateString('es-ES', {day: '2-digit', month:'2-digit', year:'numeric'}) : 'N/A';
+                         const imageUrl = caseData.image_url || '/placeholder.png';
+                         const shortTitle = caseData.title && caseData.title.length > 40 ? caseData.title.substring(0, 37) + '...' : (caseData.title || 'Sin Título');
+
+                        row.innerHTML = `
+                            <td><img src="${imageUrl}" alt="Miniatura" class="thumbnail" onerror="this.onerror=null;this.src='/placeholder.png'; this.alt='Error';"></td>
+                            <td title="${caseData.title || ''}">${shortTitle}</td>
+                            <td>${caseData.category || 'N/A'}</td>
+                            <td>${caseData.author || 'N/A'}</td>
+                            <td>${formattedDate}</td>
+                            <td class="actions">
+                                <button class="btn btn-edit case-edit-btn" data-id="${caseData.id}" title="Editar Caso Clínico"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-delete case-delete-btn" data-id="${caseData.id}" title="Eliminar Caso Clínico"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando casos clínicos:', error);
+                loadingCasesMessage.style.display = 'none';
+                caseListErrorDiv.textContent = `Error al cargar lista de casos: ${error.message}`;
+                caseListErrorDiv.style.display = 'block';
+            }
+        }
+
+        async function handleCaseFormSubmit(event) {
+            event.preventDefault();
+            if (caseSubmitButton.disabled) return;
+
+            caseSubmitButton.disabled = true;
+            caseSubmitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            caseResultDiv.style.display = 'none';
+            caseImageError.textContent = '';
+
+            const caseId = editCaseIdInput.value;
+            const isEditing = !!caseId;
+            const url = isEditing ? `${API_BASE_CASES}/${caseId}` : API_BASE_CASES;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            // Validaciones Frontend
+             if (!isEditing) { // Solo para creación
+                 const selectedDate = new Date(casePublishDateInput.value + 'T00:00:00.000Z');
+                 const today = new Date(); today.setUTCHours(0,0,0,0);
+                 if (isNaN(selectedDate.getTime()) || selectedDate < today) {
+                     showResultMessage(caseResultDiv, 'La fecha de publicación no puede ser anterior a hoy.', false);
+                     caseSubmitButton.disabled = false; caseSubmitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Añadir Caso Clínico'; return;
+                 }
+             }
+            // Validación de Imagen
+             const hasExternalUrl = caseImageUrlInput.value && caseImageUrlInput.value.trim() !== '';
+             const hasFile = caseImageFileInput.files.length > 0;
+             const hasExistingImage = caseCurrentImageContainer.style.display === 'flex';
+             const isRemovingImage = caseRemoveCurrentImageInput.value === 'true';
+             if (!hasExternalUrl && !hasFile && !(isEditing && hasExistingImage && !isRemovingImage)) {
+                 caseImageError.textContent = 'Se requiere una imagen (URL externa o archivo subido).';
+                 caseSubmitButton.disabled = false; caseSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Caso Clínico'; return;
+             }
+             if (hasExternalUrl) {
+                  try {
+                      const parsed = new URL(caseImageUrlInput.value.trim());
+                      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Protocolo inválido');
+                  } catch (e) {
+                      caseImageError.textContent = 'La URL de la imagen externa no es válida.';
+                      caseSubmitButton.disabled = false; caseSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Caso Clínico'; return;
+                  }
+             }
+
+            const formData = new FormData(caseForm);
+
+            try {
+                const response = await fetch(url, { method: method, body: formData });
+                const resultData = await response.json().catch(e => ({ message: `Respuesta no válida (Estado: ${response.status} ${response.statusText})` }));
+
+                if (response.ok) {
+                    const successMessage = isEditing ? `Caso Clínico "${resultData.title || 'seleccionado'}" actualizado!` : `Caso Clínico "${resultData.title || 'nuevo'}" añadido!`;
+                    showResultMessage(caseResultDiv, successMessage, true);
+                    resetCaseForm();
+                    loadCases(); // Recargar lista
+                } else {
+                    showResultMessage(caseResultDiv, `Error: ${resultData.message || 'Ocurrió un error desconocido'}`, false);
+                }
+            } catch (error) {
+                 console.error('Error al enviar formulario de caso:', error);
+                 showResultMessage(caseResultDiv, 'Error de red o del servidor al guardar el caso clínico.', false);
+            } finally {
+                 if (!caseResultDiv.classList.contains('success')) {
+                     caseSubmitButton.disabled = false;
+                     caseSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Caso Clínico';
+                 }
+            }
+        }
+
+        async function deleteCase(caseId, buttonElement) {
+             const originalButtonContent = buttonElement.innerHTML;
+             buttonElement.disabled = true;
+             buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+             try {
+                 const response = await fetch(`${API_BASE_CASES}/${caseId}`, { method: 'DELETE' });
+                 const resultData = await response.json().catch(() => ({ message: `Error ${response.status}: ${response.statusText}` }));
+
+                 if (response.ok) {
+                     showResultMessage(caseResultDiv, resultData.message || `Caso ${caseId} eliminado.`, true);
+                     const row = buttonElement.closest('tr');
+                     if (row) row.remove();
+                     if (casesTableBody.rows.length === 0) {
+                         casesTable.style.display = 'none';
+                         noCasesMessage.style.display = 'block';
+                     }
+                     if (String(editCaseIdInput.value) === String(caseId)) {
+                         resetCaseForm();
+                     }
+                 } else {
+                     showResultMessage(caseResultDiv, `Error al eliminar caso: ${resultData.message || 'Error desconocido'}`, false);
+                     buttonElement.disabled = false;
+                     buttonElement.innerHTML = originalButtonContent;
+                 }
+             } catch (error) {
+                  console.error('Error de red al eliminar caso:', error);
+                  showResultMessage(caseResultDiv, 'Error de red o del servidor al eliminar el caso clínico.', false);
+                  buttonElement.disabled = false;
+                  buttonElement.innerHTML = originalButtonContent;
+             }
+        }
+
+
+        // --- Funciones Específicas para Noticias ---
+
+        function resetNewsForm() {
+            newsForm.reset();
+            editNewsIdInput.value = '';
+            newsFormTitle.innerHTML = '<i class="fas fa-bullhorn"></i> Añadir Nueva Noticia';
+            newsSubmitButton.innerHTML = '<i class="fas fa-plus-circle"></i> Añadir Noticia';
+            newsSubmitButton.disabled = false;
+            newsCancelEditButton.style.display = 'none';
+            newsResultDiv.style.display = 'none';
+        }
+
+        async function loadNewsAdmin() {
+            loadingNewsMessage.style.display = 'block';
+            newsTable.style.display = 'none';
+            noNewsMessage.style.display = 'none';
+            newsTableBody.innerHTML = '';
+            newsListErrorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(API_GET_NEWS); // Ruta admin GET
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Error al cargar noticias: ${response.statusText}`);
+                }
+                const newsItems = await response.json();
+                window.allNewsData = newsItems; // Guardar globalmente para editar
+
+                loadingNewsMessage.style.display = 'none';
+
+                if (newsItems.length === 0) {
+                    noNewsMessage.style.display = 'block';
+                } else {
+                    newsTable.style.display = 'table';
+                    newsItems.forEach(item => {
+                        const row = newsTableBody.insertRow();
+                        const formattedDate = item.publish_date ? new Date(item.publish_date).toLocaleDateString('es-ES', {day: '2-digit', month:'2-digit', year:'numeric'}) : 'N/A';
+                        const shortContent = item.content && item.content.length > 50 ? item.content.substring(0, 47) + '...' : (item.content || '');
+                        const linkDisplay = item.link ? `<a href="${item.link}" target="_blank" title="${item.link}" rel="noopener noreferrer">${item.link.substring(0, 30)}${item.link.length > 30 ? '...' : ''}</a>` : 'N/A';
+                        const shortTitle = item.title && item.title.length > 40 ? item.title.substring(0, 37) + '...' : (item.title || 'Sin Título');
+
+
+                        row.innerHTML = `
+                            <td title="${item.title || ''}">${shortTitle}</td>
+                            <td title="${item.content || ''}">${shortContent}</td>
+                            <td>${linkDisplay}</td>
+                            <td>${formattedDate}</td>
+                            <td class="actions">
+                                <button class="btn btn-edit news-edit-btn" data-id="${item.id}" title="Editar Noticia"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-delete news-delete-btn" data-id="${item.id}" title="Eliminar Noticia"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando noticias (admin):', error);
+                loadingNewsMessage.style.display = 'none';
+                newsListErrorDiv.textContent = `Error al cargar lista de noticias: ${error.message}`;
+                newsListErrorDiv.style.display = 'block';
+            }
+        }
+
+        function populateNewsFormForEdit(newsId) {
+            resetNewsForm(); // Limpiar primero
+            // Buscar la noticia en los datos cargados previamente
+            const newsItem = window.allNewsData?.find(n => n.id === parseInt(newsId));
+
+            if (!newsItem) {
+                showResultMessage(newsResultDiv, 'Error: No se encontró la noticia para editar.', false);
+                console.error(`News item with ID ${newsId} not found in global data.`);
+                return;
+            }
+
+             // Poblar campos del formulario
+             editNewsIdInput.value = newsItem.id;
+             newsTitleInput.value = newsItem.title || '';
+             newsContentInput.value = newsItem.content || '';
+             newsImageUrlInput.value = newsItem.image_url || '';
+             newsLinkInput.value = newsItem.link || '';
+
+
+             // Actualizar UI del formulario a modo edición
+             newsFormTitle.innerHTML = `<i class="fas fa-edit"></i> Editando Noticia: ${newsItem.title || `ID ${newsItem.id}`}`;
+             newsSubmitButton.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+             newsCancelEditButton.style.display = 'inline-block'; // Mostrar botón cancelar
+             newsSubmitButton.disabled = false; // Habilitar botón guardar
+
+             // Scroll al formulario
+             window.scrollTo({ top: newsFormSection.offsetTop - 80, behavior: 'smooth' });
+        }
+
+
+        async function handleNewsFormSubmit(event) {
+            event.preventDefault();
+            if (newsSubmitButton.disabled) return;
+
+            newsSubmitButton.disabled = true;
+            newsSubmitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            newsResultDiv.style.display = 'none';
+
+            const newsId = editNewsIdInput.value;
+            const isEditing = !!newsId;
+            const url = isEditing ? `${API_BASE_NEWS}/${newsId}` : API_BASE_NEWS;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            // Recoger datos del formulario
+            const bodyData = {
+                title: newsTitleInput.value.trim(),
+                content: newsContentInput.value.trim(),
+                image_url: newsImageUrlInput.value.trim() || null, // Enviar null si está vacío
+                link: newsLinkInput.value.trim() || null,       // Enviar null si está vacío
+            };
+
+            // Validación Frontend
+            if (!bodyData.title || !bodyData.content) {
+                showResultMessage(newsResultDiv, 'Error: El título y el contenido de la noticia son obligatorios.', false);
+                newsSubmitButton.disabled = false; // Reactivar botón
+                newsSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Noticia';
+                return; // Detener
+            }
+            // Validar URLs si se proporcionan
+             if (bodyData.image_url) {
+                 try {
+                     const parsed = new URL(bodyData.image_url);
+                     if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Protocolo inválido');
+                 } catch (_) {
+                     showResultMessage(newsResultDiv, 'Error: La URL de la imagen no es válida.', false);
+                     newsSubmitButton.disabled = false; newsSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Noticia'; return;
+                 }
+             }
+              if (bodyData.link && !bodyData.link.startsWith('/') && !bodyData.link.startsWith('http')) {
+                  try {
+                      new URL(bodyData.link);
+                  } catch (_) {
+                       showResultMessage(newsResultDiv, 'Error: El enlace debe ser una ruta relativa (ej. /post/123) o una URL completa.', false);
+                       newsSubmitButton.disabled = false; newsSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Noticia'; return;
+                  }
+              }
+
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }, // Enviar JSON
+                    body: JSON.stringify(bodyData) // Convertir objeto a JSON string
+                });
+                const resultData = await response.json().catch(e => ({ message: `Respuesta no válida (Estado: ${response.status} ${response.statusText})` }));
+
+                if (response.ok) {
+                    const successMessage = isEditing ? `Noticia "${resultData.title || 'seleccionada'}" actualizada con éxito.` : `Noticia "${resultData.title || 'nueva'}" añadida con éxito.`;
+                    showResultMessage(newsResultDiv, successMessage, true);
+                    resetNewsForm(); // Limpiar formulario
+                    loadNewsAdmin(); // Recargar la lista de noticias
+                } else {
+                    showResultMessage(newsResultDiv, `Error: ${resultData.message || 'Ocurrió un error desconocido'}`, false);
+                }
+            } catch (error) {
+                 console.error('Error al enviar formulario de noticia:', error);
+                 showResultMessage(newsResultDiv, 'Error de red o del servidor al guardar la noticia.', false);
+            } finally {
+                 if (!newsResultDiv.classList.contains('success')) {
+                     newsSubmitButton.disabled = false;
+                     newsSubmitButton.innerHTML = isEditing ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-plus-circle"></i> Añadir Noticia';
+                 }
+            }
+        }
+
+        async function deleteNews(newsId, buttonElement) {
+            const originalButtonContent = buttonElement.innerHTML;
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const response = await fetch(`${API_BASE_NEWS}/${newsId}`, { method: 'DELETE' });
+                const resultData = await response.json().catch(() => ({ message: `Error ${response.status}: ${response.statusText}` }));
+
+                if (response.ok) {
+                    showResultMessage(newsResultDiv, resultData.message || `Noticia ${newsId} eliminada.`, true);
+                    const row = buttonElement.closest('tr');
+                    if (row) row.remove();
+                    // Verificar si tabla quedó vacía
+                    if (newsTableBody.rows.length === 0) {
+                        newsTable.style.display = 'none';
+                        noNewsMessage.style.display = 'block';
+                    }
+                    // Resetear form si se borró la noticia en edición
+                    if (String(editNewsIdInput.value) === String(newsId)) {
+                        resetNewsForm();
+                    }
+                } else {
+                    showResultMessage(newsResultDiv, `Error al eliminar noticia: ${resultData.message || 'Error desconocido'}`, false);
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalButtonContent;
+                }
+            } catch (error) {
+                 console.error('Error de red al eliminar noticia:', error);
+                 showResultMessage(newsResultDiv, 'Error de red o del servidor al eliminar la noticia.', false);
+                 buttonElement.disabled = false;
+                 buttonElement.innerHTML = originalButtonContent;
+            }
+        }
+
+        // --- Event Listeners ---
+        // Formularios
+        articleForm.addEventListener('submit', handleArticleFormSubmit);
+        caseForm.addEventListener('submit', handleCaseFormSubmit);
+        newsForm.addEventListener('submit', handleNewsFormSubmit);
+
+        // Botones Cancelar Edición
+        articleCancelEditButton.addEventListener('click', resetArticleForm);
+        caseCancelEditButton.addEventListener('click', resetCaseForm);
+        newsCancelEditButton.addEventListener('click', resetNewsForm);
+
+        // Clicks en Tablas (Delegación de eventos)
+        articlesTableBody.addEventListener('click', (event) => {
+            const target = event.target.closest('button[data-id]'); // Buscar el botón más cercano con data-id
+            if (!target) return; // Si no se hizo clic en un botón, salir
+            const articleId = target.dataset.id; // Obtener el ID
+            if (target.classList.contains('article-edit-btn')) {
+                populateArticleFormForEdit(articleId); // Llamar a editar
+            } else if (target.classList.contains('article-delete-btn')) {
+                if (confirm(`¿Estás seguro de que quieres eliminar el ARTÍCULO con ID ${articleId}? Esta acción no se puede deshacer.`)) {
+                    deleteArticle(articleId, target); // Llamar a eliminar
+                }
+            }
+        });
+        casesTableBody.addEventListener('click', (event) => {
+            const target = event.target.closest('button[data-id]');
+            if (!target) return;
+            const caseId = target.dataset.id;
+            if (target.classList.contains('case-edit-btn')) {
+                populateCaseFormForEdit(caseId);
+            } else if (target.classList.contains('case-delete-btn')) {
+                if (confirm(`¿Estás seguro de que quieres eliminar el CASO CLÍNICO con ID ${caseId}? Esta acción no se puede deshacer.`)) {
+                    deleteCase(caseId, target);
+                }
+            }
+        });
+        newsTableBody.addEventListener('click', (event) => {
+             const target = event.target.closest('button[data-id]');
+             if (!target) return;
+             const newsId = target.dataset.id;
+             if (target.classList.contains('news-edit-btn')) {
+                 populateNewsFormForEdit(newsId); // Llamar a la función de editar noticia
+             } else if (target.classList.contains('news-delete-btn')) {
+                 if (confirm(`¿Estás seguro de que quieres eliminar la NOTICIA con ID ${newsId}?`)) {
+                     deleteNews(newsId, target); // Llamar a la función de eliminar noticia
+                 }
+             }
+        });
+
+
+        // Botones Quitar PDF (Artículos y Casos)
+        articleRemovePdfButton.addEventListener('click', () => {
+             if (confirm('¿Marcar el PDF actual del artículo para eliminar al guardar?')) {
+                articleRemoveCurrentPdfInput.value = 'true'; // Marcar para borrar
+                articleCurrentPdfContainer.style.display = 'none'; // Ocultar contenedor
+                articlePdfRemovedMessage.style.display = 'block'; // Mostrar mensaje
+                articlePdfFileInput.value = null; // Limpiar input de archivo por si acaso
+            }
+        });
+         caseRemovePdfButton.addEventListener('click', () => {
+              if (confirm('¿Marcar el PDF actual del caso clínico para eliminar al guardar?')) {
+                caseRemoveCurrentPdfInput.value = 'true';
+                caseCurrentPdfContainer.style.display = 'none';
+                casePdfRemovedMessage.style.display = 'block';
+                 casePdfFileInput.value = null;
+            }
+         });
+
+        // Botones Quitar Imagen (Artículos y Casos)
+        articleRemoveImageButton.addEventListener('click', () => {
+             if (confirm('¿Marcar la IMAGEN ACTUAL del artículo para eliminar al guardar? Deberás añadir una nueva (URL o archivo) para poder guardar.')) {
+                articleRemoveCurrentImageInput.value = 'true'; // Marcar para borrar
+                articleCurrentImageContainer.style.display = 'none'; // Ocultar contenedor
+                articleImageRemovedMessage.style.display = 'block'; // Mostrar mensaje
+                articleImageUrlInput.value = ''; // Limpiar URL por si acaso
+                articleImageFileInput.value = null; // Limpiar input de archivo
+             }
+        });
+        caseRemoveImageButton.addEventListener('click', () => {
+             if (confirm('¿Marcar la IMAGEN ACTUAL del caso para eliminar al guardar? Deberás añadir una nueva (URL o archivo) para poder guardar.')) {
+                caseRemoveCurrentImageInput.value = 'true';
+                caseCurrentImageContainer.style.display = 'none';
+                caseImageRemovedMessage.style.display = 'block';
+                caseImageUrlInput.value = '';
+                caseImageFileInput.value = null;
+             }
+        });
+
+        // --- Carga Inicial ---
+        // Se ejecuta cuando el DOM está completamente cargado y parseado
+        document.addEventListener('DOMContentLoaded', () => {
+            resetArticleForm(); // Limpiar formularios al inicio
+            resetCaseForm();
+            resetNewsForm();
+            loadArticles();     // Cargar listas
+            loadCases();
+            loadNewsAdmin();
+             // Opcional: Preload de imagen placeholder para evitar flickering la primera vez
+             const placeholder = new Image();
+             placeholder.src = '/placeholder.png';
+        });
+    </script>
+
+</body>
+</html>

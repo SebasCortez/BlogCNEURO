@@ -1,0 +1,356 @@
+// --- START OF FILE post.html ---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- El título se establecerá dinámicamente -->
+    <title>Cargando Artículo... - CNEURO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Estilos específicos para la página del post individual */
+        body {
+            background-color: var(--white, #fff); /* Fondo blanco para el post */
+        }
+        .post-header-area {
+             background: linear-gradient(135deg, var(--primary-color, #2c7873), var(--secondary-color, #6fb98f));
+             color: var(--white, #fff);
+             padding: 2rem 0;
+             margin-bottom: 2rem;
+             text-align: center;
+        }
+         .post-title-single {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+         }
+         .post-meta-single {
+             font-size: 1rem;
+             color: rgba(255, 255, 255, 0.8);
+         }
+         .post-meta-single span { margin: 0 10px; }
+         .post-meta-single i { margin-right: 5px; }
+
+         .post-content-area {
+             background-color: var(--white);
+             padding: 2rem;
+             border-radius: 8px;
+             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+             margin-top: -50px; /* Solapar ligeramente con el header */
+             position: relative; /* Para el z-index si es necesario */
+             z-index: 10;
+             margin-bottom: 2rem;
+         }
+
+        .post-featured-image {
+            width: 100%; /* Ocupa el ancho del contenedor */
+            max-height: 500px; /* Limita la altura máxima */
+            object-fit: cover; /* Cubre el área sin distorsionar, puede recortar */
+            border-radius: 8px;
+            margin-bottom: 2rem; /* Espacio debajo de la imagen */
+            display: block; /* Asegura que sea un bloque */
+        }
+
+        .post-full-content {
+            color: var(--text-color, #495057);
+            line-height: 1.8; /* Un poco más de espacio entre líneas */
+            font-size: 1.1rem; /* Ligeramente más grande para lectura */
+        }
+
+        /* --- !!! REGLAS CLAVE PARA IMÁGENES DENTRO DEL CONTENIDO !!! --- */
+        .post-full-content img {
+            max-width: 100%; /* La imagen nunca será más ancha que su contenedor */
+            height: auto; /* Mantiene la proporción al escalar el ancho */
+            display: block; /* Evita espacio extra debajo y permite centrar con márgenes */
+            margin-top: 1.5rem; /* Espacio arriba */
+            margin-bottom: 1.5rem; /* Espacio abajo */
+            margin-left: auto; /* Centrar la imagen si es más estrecha que el contenedor */
+            margin-right: auto; /* Centrar la imagen */
+            border-radius: 4px; /* Bordes redondeados sutiles */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra sutil */
+        }
+        /* --- Fin reglas clave --- */
+
+        .post-full-content h1,
+        .post-full-content h2,
+        .post-full-content h3 {
+            color: var(--primary-color, #2c7873);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+         .post-full-content p {
+             margin-bottom: 1.2rem;
+         }
+         .post-full-content a {
+             color: var(--secondary-color, #6fb98f);
+             text-decoration: none;
+             border-bottom: 1px dotted var(--secondary-color, #6fb98f);
+             transition: color 0.3s ease, border-bottom-color 0.3s ease;
+         }
+          .post-full-content a:hover {
+             color: var(--primary-color, #2c7873);
+             border-bottom-color: var(--primary-color, #2c7873);
+         }
+        .post-full-content ul, .post-full-content ol {
+            margin-left: 2rem;
+            margin-bottom: 1.2rem;
+        }
+        .post-full-content blockquote {
+            border-left: 4px solid var(--accent-color, #f3c623);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        .pdf-download-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color, #2c7873);
+            color: var(--white, #fff);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .pdf-download-link i { margin-right: 8px; }
+        .pdf-download-link:hover {
+             background-color: #245c58;
+        }
+
+        .back-link {
+             display: block;
+             margin-top: 2rem;
+             color: var(--secondary-color);
+             text-decoration: none;
+             font-size: 1rem; /* Añadido para consistencia */
+         }
+         .back-link:hover {
+             text-decoration: underline;
+         }
+
+        #loadingIndicator, #errorIndicator {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+         #loadingIndicator i { font-size: 2rem; display: block; margin-bottom: 1rem; color: var(--primary-color);}
+         #errorIndicator { color: var(--danger-color, red); display: none; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header (Incluye enlace a Casos Clínicos) -->
+    <header>
+         <div class="container header-content">
+             <div class="logo">
+                 <a href="/">
+                     <i class="fas fa-heartbeat"></i>
+                     <h1>CNEURO</h1>
+                 </a>
+             </div>
+              <nav>
+                 <ul>
+                     <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
+                     <li><a href="/articles.html"><i class="fas fa-book-medical"></i> Artículos</a></li>
+                     <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
+                     <li><a href="/#revisiones"><i class="fas fa-search"></i> Revisiones</a></li>
+                     <li><a href="/#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
+                     <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                 </ul>
+             </nav>
+         </div>
+     </header>
+
+    <div id="loadingIndicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        Cargando contenido del artículo...
+    </div>
+    <div id="errorIndicator" style="display: none;"></div>
+
+    <article id="postArticle" style="display: none;">
+         <!-- Área del Título y Metadatos -->
+         <section class="post-header-area">
+            <div class="container">
+                <h1 class="post-title-single" id="postTitle"></h1>
+                <div class="post-meta-single">
+                    <span id="postCategory"><i class="fas fa-tag"></i> </span>
+                    <span id="postAuthor"><i class="fas fa-user-edit"></i> </span>
+                    <span id="postDate"><i class="fas fa-calendar-alt"></i> </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Área del Contenido Principal -->
+        <div class="container">
+             <div class="post-content-area">
+                 <!-- Imagen Destacada -->
+                 <img src="" alt="" class="post-featured-image" id="postImage" style="display: none;">
+
+                 <!-- Contenido Completo del Post -->
+                 <div class="post-full-content" id="postFullContent">
+                     <!-- El contenido HTML se insertará aquí -->
+                 </div>
+
+                  <!-- Enlace de Descarga PDF (si existe) -->
+                  <a href="#" id="pdfLink" class="pdf-download-link" style="display: none;" target="_blank" rel="noopener noreferrer">
+                      <i class="fas fa-file-pdf"></i> Descargar PDF
+                  </a>
+
+                 <!-- Enlace para volver a la lista de artículos -->
+                 <a href="/articles.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver a Artículos</a>
+            </div>
+        </div>
+    </article>
+
+
+    <!-- Footer (Reutiliza el de index.html) -->
+     <footer id="contacto">
+         <div class="container">
+            <div class="footer-content">
+                 <!-- Columna Descripción CNEURO -->
+                 <div class="footer-column">
+                     <h4>CNEURO</h4>
+                     <p>Blog médico semanal con las últimas investigaciones, revisiones y avances en el campo de la medicina.</p>
+                     <div class="social-links">
+                         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                         <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                         <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                         <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                     </div>
+                 </div>
+                 <!-- Columna Enlaces Rápidos -->
+                 <div class="footer-column">
+                     <h4>Enlaces Rápidos</h4>
+                     <ul>
+                         <li><a href="/">Inicio</a></li>
+                         <li><a href="/articles.html">Artículos</a></li>
+                         <li><a href="/cases.html">Casos Clínicos</a></li>
+                         <li><a href="/#revisiones">Revisiones</a></li>
+                         <li><a href="/#sobre-nosotros">Sobre Nosotros</a></li>
+                         <li><a href="/admin.html">Admin</a></li>
+                     </ul>
+                 </div>
+                 <!-- Columna Contacto -->
+                 <div class="footer-column">
+                     <h4>Contacto</h4>
+                      <ul>
+                         <li><i class="fas fa-map-marker-alt"></i> Calle Médica 123, Cuzco</li>
+                         <li><i class="fas fa-phone"></i> +51 948 705 090</li>
+                         <li><i class="fas fa-envelope"></i> info@cneuroblog.com</li>
+                     </ul>
+                 </div>
+             </div>
+             <div class="copyright">
+                 <p>© 2024 CNEURO. Todos los derechos reservados.</p>
+             </div>
+         </div>
+     </footer>
+
+
+    <script>
+        // --- Elementos DOM ---
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorIndicator = document.getElementById('errorIndicator');
+        const postArticle = document.getElementById('postArticle'); // El <article> que contiene todo
+
+        // Elementos dentro del <article>
+        const postTitleElem = document.getElementById('postTitle');
+        const postCategoryElem = document.getElementById('postCategory');
+        const postAuthorElem = document.getElementById('postAuthor');
+        const postDateElem = document.getElementById('postDate');
+        const postImageElem = document.getElementById('postImage');
+        const postFullContentElem = document.getElementById('postFullContent');
+        const pdfLinkElem = document.getElementById('pdfLink');
+
+        // --- Funciones Auxiliares ---
+        function displayError(message) {
+            loadingIndicator.style.display = 'none';
+            postArticle.style.display = 'none';
+            errorIndicator.textContent = `Error: ${message}`;
+            errorIndicator.style.display = 'block';
+            document.title = "Error - CNEURO";
+        }
+
+         function formatDate(dateString) {
+            if (!dateString) return 'Fecha no disponible';
+            try {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('es-ES', options);
+            } catch (e) {
+                console.error("Error formateando fecha:", dateString, e);
+                return 'Fecha inválida';
+            }
+        }
+
+        // --- Lógica Principal ---
+        // Obtener el ID del post desde la URL
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id'); // Este es el ID del artículo
+
+        if (!postId) {
+            displayError('No se especificó un ID de artículo en la URL.');
+        } else {
+            // Solicitar datos del ARTÍCULO a la API correcta
+            // *** LA CORRECCIÓN ESTÁ AQUÍ ***
+            fetch(`/api/articles/${postId}`) // Cambiado de /api/posts/ a /api/articles/
+                .then(response => {
+                    if (!response.ok) {
+                         return response.json().then(errData => {
+                              throw new Error(errData.message || `Estado ${response.status}: ${response.statusText}`);
+                         }).catch(() => {
+                             throw new Error(`Estado ${response.status}: ${response.statusText}`);
+                         });
+                    }
+                    return response.json();
+                })
+                .then(post => { // 'post' ahora contiene los datos del artículo
+                    // Rellenar la página con los datos del artículo
+                    document.title = `${post.title || 'Artículo'} - CNEURO`; // Título de la pestaña
+
+                    postTitleElem.textContent = post.title || 'Título no disponible';
+                    postCategoryElem.innerHTML = `<i class="fas fa-tag"></i> ${post.category || 'Sin categoría'}`;
+                    postAuthorElem.innerHTML = `<i class="fas fa-user-edit"></i> ${post.author || 'Autor desconocido'}`;
+                    postDateElem.innerHTML = `<i class="fas fa-calendar-alt"></i> Publicado el ${formatDate(post.publish_date)}`;
+
+                    // Manejar imagen destacada
+                    if (post.image_url) {
+                        postImageElem.src = post.image_url;
+                        postImageElem.alt = `Imagen principal para ${post.title || 'Artículo'}`;
+                        postImageElem.style.display = 'block';
+                         postImageElem.onerror = () => {
+                            console.warn(`No se pudo cargar la imagen del artículo: ${post.image_url}`);
+                            postImageElem.style.display = 'none';
+                         }
+                    } else {
+                         postImageElem.style.display = 'none';
+                    }
+
+                    // Insertar contenido completo (permite HTML)
+                    postFullContentElem.innerHTML = post.full_content || '<p>Contenido no disponible.</p>';
+
+                    // Manejar enlace PDF
+                    if (post.pdf_url) {
+                        pdfLinkElem.href = post.pdf_url;
+                        pdfLinkElem.style.display = 'inline-block';
+                    } else {
+                         pdfLinkElem.style.display = 'none';
+                    }
+
+                    // Ocultar indicador de carga y mostrar contenido
+                    loadingIndicator.style.display = 'none';
+                    postArticle.style.display = 'block'; // Mostrar el <article> completo
+                })
+                .catch(error => {
+                    console.error('Error al cargar el artículo:', error);
+                    displayError(error.message || 'No se pudo cargar el artículo. Inténtalo de nuevo más tarde.');
+                });
+        }
+    </script>
+
+</body>
+</html>
+// --- END OF FILE post.html ---
