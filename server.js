@@ -47,7 +47,7 @@ const PRIVATE_DIR = path.join(__dirname, 'private');
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 // Contraseña por defecto 'admin' (hash bcrypt). ¡CAMBIAR EN PRODUCCIÓN!
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$vvm.ZggYIhTkKsEXq2hWxeisHrG6l2sHZ5Deq9cKrjHdSEzFQZXb2';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'administradorcneuro'; // ¡CAMBIAR EN PRODUCCIÓN!
+const SESSION_SECRET = process.env.SESSION_SECRET;
 
 if (ADMIN_PASSWORD_HASH === '$2b$10$CAMBIAESTOXD') { // Ajusta si cambiaste el hash por defecto
     console.warn('\x1b[31m%s\x1b[0m', 'CRITICAL WARNING: Using default admin p  assword hash! Generate a new one with "npm run generate-hash" and set ADMIN_PASSWORD_HASH environment variable.');
@@ -1337,6 +1337,17 @@ app.use((err, req, res, next) => {
     res.status(status).send(`<h1>Error ${status}</h1><p>${message}</p>`);
 });
 
+if (process.env.NODE_ENV === 'production') {
+    if (!ADMIN_PASSWORD_HASH) {
+      console.error('FATAL ERROR: ADMIN_PASSWORD_HASH environment variable is not set.');
+      process.exit(1); // Detener la aplicación si falta el hash
+    }
+    if (!SESSION_SECRET) {
+      console.error('FATAL ERROR: SESSION_SECRET environment variable is not set.');
+      process.exit(1); // Detener la aplicación si falta el secret
+    }
+    // Puedes añadir más verificaciones si tienes otras variables críticas (DB URL, etc.)
+  }
 // --- Iniciar Servidor ---
 app.listen(PORT, () => {
     console.log(`\nServer running on port ${PORT}`); // Ahora usa la variable PORT

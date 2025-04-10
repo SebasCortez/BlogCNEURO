@@ -1,6 +1,19 @@
-# .gitignore
+# Dependencias
 node_modules/
-.env      
+
+# Archivos de entorno local (¡NUNCA subir a Git!)
+.env
+
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Directorio de datos LOCAL (si lo creaste para probar)
+# No ignores el contenido del disco persistente en producción, solo el local.
+/data/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
