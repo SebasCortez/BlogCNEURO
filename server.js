@@ -1,6 +1,6 @@
 // --- START OF FILE server.js ---
 // -----------------------------------------------------------------------------
-// server.js - Blog CNEURO Backend con Autenticación y CRUD (Artículos + Casos + Noticias)
+// server.js - Blog CNEURO Backend con Autenticación y CRUD (Artículos + Casos + Noticias + Revisiones)
 // -----------------------------------------------------------------------------
 
 const express = require('express');
@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 const POSTS_FILE = path.join(__dirname, 'posts.json'); // Para Artículos
 const CASES_FILE = path.join(__dirname, 'cases.json'); // Para Casos Clínicos
 const NEWS_FILE = path.join(__dirname, 'news.json');   // Para Noticias
+const REVISIONS_FILE = path.join(__dirname, 'revisiones.json'); // Para Revisiones Médicas
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PRIVATE_DIR = path.join(__dirname, 'private');
@@ -27,10 +28,10 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$vvm.ZggYIhTkKsEXq2hWxeisHrG6l2sHZ5Deq9cKrjHdSEzFQZXb2';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'administradorcneuro'; // ¡CAMBIAR EN PRODUCCIÓN!
 
-if (ADMIN_PASSWORD_HASH === '$2b$10$PONERNUEVOHASHGENERADOCONSCRIPT') {
-    console.warn('\x1b[31m%s\x1b[0m', 'CRITICAL WARNING: Using default admin password hash! Generate a new one with "npm run generate-hash" and set ADMIN_PASSWORD_HASH environment variable.');
+if (ADMIN_PASSWORD_HASH === '$2b$10$CAMBIAESTOXD') { // Ajusta si cambiaste el hash por defecto
+    console.warn('\x1b[31m%s\x1b[0m', 'CRITICAL WARNING: Using default admin p  assword hash! Generate a new one with "npm run generate-hash" and set ADMIN_PASSWORD_HASH environment variable.');
 }
-if (SESSION_SECRET === 'administradorcneuro_secreto_muy_seguro_cambiar') {
+if (SESSION_SECRET === 'adminCAMBIAESTOTAMBIENXD') { // Ajusta si cambiaste el secret por defecto
     console.warn('\x1b[33m%s\x1b[0m', 'WARNING: Using default session SECRET! Set SESSION_SECRET environment variable to a long random string.');
 }
 
@@ -44,7 +45,7 @@ const storage = multer.diskStorage({
     }
 });
 const fileFilter = (req, file, cb) => {
-    // Permitir PDF o Imágenes JPG/PNG dependiendo del campo
+    // Permitir PDF o Imágenes JPG/PNG/GIF/WEBP dependiendo del campo
     if ((file.fieldname === 'pdfFile' && file.mimetype === 'application/pdf') ||
         (file.fieldname === 'imageFile' && ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.mimetype))) { // Ampliado tipos de imagen
         cb(null, true);
@@ -63,7 +64,7 @@ const handleMulterUpload = (req, res, next) => {
     const uploader = upload.fields([{ name: 'pdfFile', maxCount: 1 }, { name: 'imageFile', maxCount: 1 }]);
     uploader(req, res, err => {
         if (err instanceof multer.MulterError) {
-            // Ignorar error si el campo no existe (puede ser para noticias)
+            // Ignorar error si el campo no existe (puede ser para noticias o revisiones sin imagen)
             if (err.code === 'LIMIT_UNEXPECTED_FILE') {
                  console.warn("Multer warning: Unexpected file field received, ignoring.");
                  next();
@@ -190,6 +191,31 @@ async function writeNews(newsItems) {
         throw new Error('Error al guardar datos de noticias.');
     }
 }
+
+// **** NUEVAS FUNCIONES PARA REVISIONES (revisiones.json) ****
+async function readRevisions() {
+    try {
+        const data = await fs.readFile(REVISIONS_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.log('revisiones.json not found, returning empty array.');
+            return [];
+        }
+        console.error("Error reading revisiones.json:", error);
+        throw new Error('Error al leer datos de revisiones médicas.');
+    }
+}
+async function writeRevisions(revisions) {
+    try {
+        await fs.writeFile(REVISIONS_FILE, JSON.stringify(revisions, null, 2), 'utf8');
+        console.log('DEBUG: revisiones.json successfully written.');
+    } catch (error) {
+        console.error("Error writing revisiones.json:", error);
+        throw new Error('Error al guardar datos de revisiones médicas.');
+    }
+}
+// *********************************************************
 
 
 // Función genérica para borrar archivos subidos
@@ -327,6 +353,51 @@ app.get('/api/news', async (req, res) => {
 });
 
 
+// **** NUEVAS RUTAS PÚBLICAS PARA REVISIONES ****
+// GET /api/revisions (Lista pública de revisiones)
+app.get('/api/revisions', async (req, res) => {
+    try {
+        const revisions = await readRevisions();
+        revisions.sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date)); // Más recientes primero
+        // Mapear solo los campos necesarios para la lista pública
+        const publicList = revisions.map(r => ({
+            id: r.id,
+            category: r.category,
+            title: r.title,
+            excerpt: r.excerpt,
+            image_url: r.image_url, // Puede ser null
+            author: r.author,
+            publish_date: r.publish_date
+        }));
+        res.json(publicList);
+    } catch (e) {
+        console.error("GET /api/revisions Error:", e);
+        res.status(500).json({ message: e.message || 'Error al obtener revisiones médicas' });
+    }
+});
+
+// GET /api/revisions/:id (Revisión específica)
+app.get('/api/revisions/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: 'ID de revisión inválido' });
+        }
+        const revisions = await readRevisions();
+        const revision = revisions.find(r => r.id === id);
+        if (revision) {
+            res.json(revision); // Devuelve el objeto completo
+        } else {
+            res.status(404).json({ message: 'Revisión médica no encontrada' });
+        }
+    } catch (e) {
+        console.error(`GET /api/revisions/${req.params.id} Error:`, e);
+        res.status(500).json({ message: e.message || 'Error al obtener la revisión médica' });
+    }
+});
+// ************************************************
+
+
 // --- Rutas de Autenticación ---
 // GET /login.html (servido por express.static)
 
@@ -338,8 +409,8 @@ app.post('/login', async (req, res) => {
         return res.redirect('/login.html?error=1'); // Error 1: Campos vacíos o incorrectos
     }
 
-    if (ADMIN_PASSWORD_HASH === '$2b$10$HOLAMODIFICAESTO') {
-         console.error('CRITICAL SECURITY ISSUE: Default password hash is being used for login attempt.');
+    if (ADMIN_PASSWORD_HASH === '$2b$10CAMBIAESTOXD' && process.env.NODE_ENV !== 'development') { // Ajusta si cambiaste el hash
+         console.error('CRITICAL SECURITY ISSUE: Default password hash is being used for login attempt in non-dev environment.');
          // Considera no permitir el login en este caso o mostrar un error más grave
          return res.redirect('/login.html?error=2'); // Error 2: Configuración insegura
     }
@@ -439,7 +510,7 @@ app.post('/api/admin/articles', isAuthenticated, handleMulterUpload, async (req,
                 throw new Error('La URL de la imagen externa no es válida.');
             }
         } else {
-             // Si no hay archivo ni URL válida, es un error
+             // Si no hay archivo ni URL válida, es un error para artículos
              throw new Error('Se requiere una imagen (subir archivo o proporcionar URL válida).');
         }
 
@@ -564,7 +635,7 @@ app.put('/api/admin/articles/:id', isAuthenticated, handleMulterUpload, async (r
               } catch { throw new Error('La URL de la imagen externa proporcionada no es válida.'); }
         }
 
-        // Validación final: debe haber una imagen
+        // Validación final: debe haber una imagen para artículos
         if (!finalImageUrl) {
              throw new Error('El artículo debe tener una imagen. Proporciona una URL o sube un archivo.');
         }
@@ -699,7 +770,7 @@ app.post('/api/admin/cases', isAuthenticated, handleMulterUpload, async (req, re
         if (isNaN(publishDate.getTime())) { throw new Error('Fecha de publicación inválida.'); }
         if (publishDate < today) { throw new Error('La fecha de publicación no puede ser anterior a hoy.'); }
 
-        // Validación y determinación de URL de Imagen
+        // Validación y determinación de URL de Imagen (obligatoria para casos)
         let finalImageUrl = null;
         if (imgFilePath) {
             finalImageUrl = `/uploads/${imgFilePath}`;
@@ -764,7 +835,7 @@ app.put('/api/admin/cases/:id', isAuthenticated, handleMulterUpload, async (req,
         }
         const originalCase = cases[caseIndex];
 
-        // --- Lógica de Imagen (Idéntica a la de Artículos) ---
+        // --- Lógica de Imagen (Idéntica a la de Artículos - Obligatoria) ---
          let finalImageUrl = originalCase.image_url;
          if (newImgFile) {
              finalImageUrl = `/uploads/${newImgFile}`;
@@ -773,6 +844,7 @@ app.put('/api/admin/cases/:id', isAuthenticated, handleMulterUpload, async (req,
              finalImageUrl = null;
              if (originalCase.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalCase.image_url); }
              if (!data.image_url?.trim()) { throw new Error('Si eliminas la imagen actual, debes proporcionar una nueva URL externa.'); }
+             // URL externa se gestiona después
          }
          if (!newImgFile && !removeCurrentImage && data.image_url !== originalCase.image_url) {
              if (data.image_url?.trim()) {
@@ -782,11 +854,12 @@ app.put('/api/admin/cases/:id', isAuthenticated, handleMulterUpload, async (req,
                      finalImageUrl = parsedUrl.toString();
                      if (originalCase.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalCase.image_url); }
                  } catch { throw new Error('La URL de la imagen externa proporcionada no es válida.'); }
-             } else if (originalCase.image_url) {
+             } else if (originalCase.image_url) { // URL se borró
                  finalImageUrl = null;
                  if (originalCase.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalCase.image_url); }
              }
          }
+        // Si se marcó eliminar pero se dio URL externa
         if (removeCurrentImage && data.image_url?.trim() && !newImgFile) {
               try {
                   const parsedUrl = new URL(data.image_url.trim());
@@ -794,6 +867,7 @@ app.put('/api/admin/cases/:id', isAuthenticated, handleMulterUpload, async (req,
                   finalImageUrl = parsedUrl.toString();
               } catch { throw new Error('La URL de la imagen externa proporcionada no es válida.'); }
         }
+         // Validación final para casos (imagen obligatoria)
          if (!finalImageUrl) { throw new Error('El caso clínico debe tener una imagen.'); }
          console.log(`DEBUG CASE IMG: Final Image URL determined: ${finalImageUrl}`);
         // --- FIN Lógica Imagen ---
@@ -887,7 +961,7 @@ app.get('/api/admin/news', isAuthenticated, async (req, res) => {
 
 
 // POST /api/admin/news (Añadir Noticia)
-app.post('/api/admin/news', isAuthenticated, async (req, res) => {
+app.post('/api/admin/news', isAuthenticated, async (req, res) => { // No necesita handleMulterUpload
     const data = req.body;
     try {
         console.log(`User ${req.session.username} ADD news. Body:`, data);
@@ -937,7 +1011,7 @@ app.post('/api/admin/news', isAuthenticated, async (req, res) => {
 });
 
 // PUT /api/admin/news/:id (Editar Noticia)
-app.put('/api/admin/news/:id', isAuthenticated, async (req, res) => {
+app.put('/api/admin/news/:id', isAuthenticated, async (req, res) => { // No necesita handleMulterUpload
     const newsId = parseInt(req.params.id, 10);
     const data = req.body;
     try {
@@ -1013,6 +1087,208 @@ app.delete('/api/admin/news/:id', isAuthenticated, async (req, res) => {
         res.status(status).json({ message: e.message || 'Error interno al eliminar la noticia.' });
     }
 });
+
+
+// **** NUEVO CRUD PARA REVISIONES (revisiones.json) ****
+
+// GET /api/admin/revisions (Obtener todas las revisiones para el admin)
+app.get('/api/admin/revisions', isAuthenticated, async (req, res) => {
+    try {
+        const revisions = await readRevisions();
+        revisions.sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
+        res.json(revisions);
+    } catch (e) {
+        console.error(`GET /api/admin/revisions Error by ${req.session.username}:`, e);
+        res.status(500).json({ message: e.message || 'Error al obtener revisiones para admin' });
+    }
+});
+
+// POST /api/admin/revisions (Añadir Revisión)
+app.post('/api/admin/revisions', isAuthenticated, handleMulterUpload, async (req, res) => {
+    const files = req.files || {};
+    const data = req.body;
+    let pdfFilePath = files.pdfFile?.[0]?.filename;
+    let imgFilePath = files.imageFile?.[0]?.filename; // Imagen puede ser opcional para revisiones
+
+    try {
+        console.log(`User ${req.session.username} ADD revision. Body:`, data, "Files:", files);
+        // Validación específica para revisiones
+        if (!data.title || !data.excerpt || !data.category || !data.author || !data.full_content || !data.publish_date) {
+            throw new Error('Faltan datos requeridos para la revisión (título, extracto, categoría, autor, contenido, fecha).');
+        }
+
+        // Validación Fecha Publicación
+        const publishDate = new Date(data.publish_date + 'T00:00:00.000Z');
+        const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+        if (isNaN(publishDate.getTime())) { throw new Error('Fecha de publicación inválida.'); }
+        if (publishDate < today) { throw new Error('La fecha de publicación no puede ser anterior a hoy.'); }
+
+        // Validación y determinación de URL de Imagen (puede ser null)
+        let finalImageUrl = null;
+        if (imgFilePath) {
+            finalImageUrl = `/uploads/${imgFilePath}`;
+        } else if (data.image_url && data.image_url.trim()) {
+            try {
+                const parsedUrl = new URL(data.image_url.trim());
+                if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error();
+                finalImageUrl = parsedUrl.toString();
+            } catch { throw new Error('La URL de la imagen externa no es válida.'); }
+        } // Si no hay ni archivo ni URL, finalImageUrl se queda en null (permitido)
+
+        const revisions = await readRevisions();
+        const newRevision = {
+            id: Date.now() + 3, // ID único simple (diferente de otros tipos)
+            title: data.title.trim(),
+            category: data.category,
+            excerpt: data.excerpt.trim(),
+            full_content: data.full_content.trim(),
+            image_url: finalImageUrl, // Puede ser null
+            author: data.author.trim(),
+            publish_date: publishDate.toISOString(),
+            pdf_url: pdfFilePath ? `/uploads/${pdfFilePath}` : null,
+            last_updated_date: new Date().toISOString()
+        };
+
+        revisions.push(newRevision);
+        await writeRevisions(revisions);
+        console.log(`Revision ${newRevision.id} created successfully by ${req.session.username}.`);
+        res.status(201).json(newRevision);
+
+    } catch (e) {
+        console.error(`Error ADD revision by ${req.session.username}:`, e);
+        if (pdfFilePath) await deleteFileIfExists(pdfFilePath);
+        if (imgFilePath) await deleteFileIfExists(imgFilePath);
+        res.status(400).json({ message: e.message || 'Error interno al crear la revisión.' });
+    }
+});
+
+// PUT /api/admin/revisions/:id (Editar Revisión)
+app.put('/api/admin/revisions/:id', isAuthenticated, handleMulterUpload, async (req, res) => {
+    const revisionId = parseInt(req.params.id, 10);
+    const files = req.files || {};
+    const data = req.body;
+    let newPdfFile = files.pdfFile?.[0]?.filename;
+    let newImgFile = files.imageFile?.[0]?.filename;
+    let oldPdfToDelete = null;
+    let oldImgToDelete = null;
+    const removeCurrentPdf = data.removeCurrentPdf === 'true';
+    const removeCurrentImage = data.removeCurrentImage === 'true';
+
+    try {
+        console.log(`User ${req.session.username} UPDATE revision ${revisionId}. Body:`, data, "Files:", files, "RemovePDF:", removeCurrentPdf, "RemoveIMG:", removeCurrentImage);
+        if (isNaN(revisionId)) { throw new Error('ID de revisión inválido'); }
+        if (!data.title || !data.excerpt || !data.category || !data.author || !data.full_content) {
+             throw new Error('Faltan datos requeridos para la revisión (título, extracto, categoría, autor, contenido).');
+        }
+
+        const revisions = await readRevisions();
+        const revisionIndex = revisions.findIndex(r => r.id === revisionId);
+        if (revisionIndex === -1) {
+            res.status(404); throw new Error('Revisión no encontrada');
+        }
+        const originalRevision = revisions[revisionIndex];
+
+        // --- Lógica de Imagen (Permite null) ---
+        let finalImageUrl = originalRevision.image_url; // Empezar con la original
+        if (newImgFile) { // 1. Archivo nuevo subido
+            finalImageUrl = `/uploads/${newImgFile}`;
+            if (originalRevision.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalRevision.image_url); }
+             console.log(`DEBUG REV IMG: Using new uploaded image: ${finalImageUrl}`);
+        } else if (removeCurrentImage) { // 2. Marcado para eliminar
+             finalImageUrl = null; // Se permite explícitamente null
+             if (originalRevision.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalRevision.image_url); }
+             console.log(`DEBUG REV IMG: Image explicitly removed.`);
+        } else if (data.image_url !== originalRevision.image_url) { // 3. URL externa cambió
+             if (data.image_url?.trim()) { // Nueva URL externa
+                 try {
+                     const parsedUrl = new URL(data.image_url.trim());
+                     if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error();
+                     finalImageUrl = parsedUrl.toString();
+                     console.log(`DEBUG REV IMG: Using new external URL: ${finalImageUrl}`);
+                     if (originalRevision.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalRevision.image_url); }
+                 } catch { throw new Error('La URL de la imagen externa proporcionada no es válida.'); }
+             } else { // URL externa se borró (string vacío)
+                 finalImageUrl = null;
+                 console.log(`DEBUG REV IMG: External URL removed, setting to null.`);
+                  if (originalRevision.image_url?.startsWith('/uploads/')) { oldImgToDelete = path.basename(originalRevision.image_url); }
+             }
+        }
+        // Si no se tocó nada, finalImageUrl sigue siendo la original.
+         console.log(`DEBUG REV IMG: Final Image URL determined: ${finalImageUrl}`);
+        // --- FIN Lógica Imagen ---
+
+        // --- Lógica PDF (Idéntica a Artículos/Casos) ---
+        let finalPdfUrl = originalRevision.pdf_url;
+        if (newPdfFile) {
+            finalPdfUrl = `/uploads/${newPdfFile}`;
+            if (originalRevision.pdf_url?.startsWith('/uploads/')) { oldPdfToDelete = path.basename(originalRevision.pdf_url); }
+        } else if (removeCurrentPdf) {
+            finalPdfUrl = null;
+            if (originalRevision.pdf_url?.startsWith('/uploads/')) { oldPdfToDelete = path.basename(originalRevision.pdf_url); }
+        }
+         console.log(`DEBUG REV PDF: Final PDF URL determined: ${finalPdfUrl}`);
+        // --- FIN Lógica PDF ---
+
+        const updatedRevision = {
+            ...originalRevision, // Mantener id, publish_date original
+            title: data.title.trim(),
+            category: data.category,
+            excerpt: data.excerpt.trim(),
+            full_content: data.full_content.trim(),
+            image_url: finalImageUrl, // Puede ser null
+            author: data.author.trim(),
+            pdf_url: finalPdfUrl,
+            last_updated_date: new Date().toISOString()
+        };
+        revisions[revisionIndex] = updatedRevision;
+
+        await writeRevisions(revisions);
+
+        if (oldImgToDelete && oldImgToDelete !== newImgFile) await deleteFileIfExists(oldImgToDelete);
+        if (oldPdfToDelete && oldPdfToDelete !== newPdfFile) await deleteFileIfExists(oldPdfToDelete);
+
+        console.log(`Revision ${revisionId} updated successfully by ${req.session.username}.`);
+        res.status(200).json(updatedRevision);
+
+    } catch (error) {
+        console.error(`Error UPDATE revision ${revisionId} by ${req.session.username}:`, error);
+        if (newPdfFile) await deleteFileIfExists(newPdfFile);
+        if (newImgFile) await deleteFileIfExists(newImgFile);
+        const status = res.statusCode >= 400 ? res.statusCode : 400;
+        res.status(status).json({ message: error.message || 'Error interno al actualizar la revisión.' });
+    }
+});
+
+// DELETE /api/admin/revisions/:id (Eliminar Revisión)
+app.delete('/api/admin/revisions/:id', isAuthenticated, async (req, res) => {
+    const revisionId = parseInt(req.params.id, 10);
+    try {
+        if (isNaN(revisionId)) { throw new Error('ID de revisión inválido'); }
+        console.log(`User ${req.session.username} attempts DELETE revision ${revisionId}`);
+
+        const revisions = await readRevisions();
+        const revisionIndex = revisions.findIndex(r => r.id === revisionId);
+        if (revisionIndex === -1) {
+            res.status(404); throw new Error('Revisión no encontrada para eliminar');
+        }
+        const revisionToDelete = revisions[revisionIndex];
+
+        revisions.splice(revisionIndex, 1);
+        await writeRevisions(revisions);
+
+        // Borrar archivos asociados si existen
+        if (revisionToDelete.image_url?.startsWith('/uploads/')) await deleteFileIfExists(path.basename(revisionToDelete.image_url));
+        if (revisionToDelete.pdf_url?.startsWith('/uploads/')) await deleteFileIfExists(path.basename(revisionToDelete.pdf_url));
+
+        console.log(`Revision ${revisionId} deleted successfully by ${req.session.username}.`);
+        res.status(200).json({ message: 'Revisión eliminada correctamente' });
+    } catch (e) {
+        console.error(`Error DELETE revision ${revisionId} by ${req.session.username}:`, e);
+        const status = res.statusCode >= 400 ? res.statusCode : 500;
+        res.status(status).json({ message: e.message || 'Error interno al eliminar la revisión.' });
+    }
+});
+// *********************************************************
 
 
 // --- Manejador de Errores Global ---

@@ -11,9 +11,9 @@
         .main-content { padding: 3rem 0; }
         .section-title { text-align: center; margin-bottom: 2rem; color: var(--primary-color); position: relative; font-size: 2rem; }
         .section-title::after { content: ''; display: block; width: 80px; height: 4px; background-color: var(--accent-color); margin: 0.5rem auto; }
-        /* Usaremos .items-grid como clase común para artículos y casos */
+        /* Usaremos .items-grid como clase común para artículos, casos y revisiones */
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
-        /* Estilos de tarjeta comunes para artículos y casos */
+        /* Estilos de tarjeta comunes para artículos, casos y revisiones */
         .item-card { background-color: var(--white); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
         .item-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); }
         .item-image { height: 200px; overflow: hidden; background-color: #eee; }
@@ -29,8 +29,12 @@
         .btn-read-more:hover { background-color: var(--primary-color) !important; }
         .btn-view-case { margin-top: 1rem; background-color: var(--primary-color) !important; color: white !important; align-self: flex-start; padding: 0.6rem 1.2rem; font-size: 0.9rem; text-decoration: none; border-radius: 4px; display: inline-block; }
         .btn-view-case:hover { background-color: var(--secondary-color) !important; }
-        #revisiones, #sobre-nosotros { padding: 4rem 0; }
-        #revisiones { background-color: #e9ecef; }
+        /* Botón específico para revisiones */
+        .btn-view-revision { margin-top: 1rem; background-color: var(--accent-color) !important; color: var(--dark-color) !important; align-self: flex-start; padding: 0.6rem 1.2rem; font-size: 0.9rem; text-decoration: none; border-radius: 4px; display: inline-block; }
+        .btn-view-revision:hover { background-color: #e0b21c !important; }
+
+        #revisiones-recientes, #sobre-nosotros { padding: 4rem 0; } /* Ajuste de padding si es necesario */
+        #revisiones-recientes { background-color: #ffffff; } /* Fondo diferente? */
         /* Mensajes de carga específicos para index */
          .loading-message-index {
              text-align: center; padding: 2rem; font-size: 1.1rem; color: var(--text-color);
@@ -44,12 +48,23 @@
          .view-all-button-container {
               grid-column: 1 / -1; text-align: center; margin-top: 2rem;
          }
-         .view-all-button {
+         .view-all-button { /* Estilo base para botones Ver Todos */
              background-color: var(--primary-color); color: white;
+             transition: background-color 0.3s ease;
          }
          .view-all-button:hover {
              background-color: var(--secondary-color);
          }
+         /* Estilo específico para el botón Ver Todas las Revisiones */
+         .btn-view-revision-all {
+             background-color: var(--accent-color);
+             color: var(--dark-color);
+         }
+         .btn-view-revision-all:hover {
+             background-color: #e0b21c;
+             color: var(--dark-color); /* Asegurar color texto en hover */
+         }
+
          /* Estilos Formulario Contacto (mejorados) */
          #contacto-form { padding: 3rem 0; background-color: #e9ecef; }
          .contact-form-container {
@@ -78,6 +93,11 @@
              outline: none;
          }
 
+         /* Estilos para video responsivo y sobre nosotros */
+         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 853px; background-color: #000; margin: 2rem auto; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+         #sobre-nosotros { padding: 4rem 0; background-color: var(--white); }
+
     </style>
 </head>
 <body>
@@ -91,9 +111,9 @@
                     <li><a href="/"><i class="fas fa-home"></i> Inicio</a></li>
                     <li><a href="/articles.html"><i class="fas fa-book-medical"></i> Artículos</a></li>
                     <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
-                    <li><a href="#revisiones"><i class="fas fa-search"></i> Revisiones</a></li>
+                    <li><a href="/revisiones.html"><i class="fas fa-book-reader"></i> Revisiones</a></li>
                     <li><a href="#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
-                    <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                    <li><a href="#contacto-form"><i class="fas fa-envelope"></i> Contacto</a></li>
                      <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
                 </ul>
             </nav>
@@ -104,8 +124,9 @@
         <div class="container hero-content">
             <h2>Actualidad Médica Semanal</h2>
             <p>Mantente informado con los últimos artículos, casos clínicos y revisiones médicas realizadas por profesionales de la salud.</p>
-            <a href="/articles.html" class="btn" style="margin-right: 10px;">Ver Artículos</a>
-            <a href="/cases.html" class="btn" style="background-color: var(--secondary-color);">Ver Casos Clínicos</a>
+            <a href="/articles.html" class="btn" style="margin-right: 10px; margin-bottom: 10px;">Ver Artículos</a>
+            <a href="/cases.html" class="btn" style="background-color: var(--secondary-color); margin-right: 10px; margin-bottom: 10px;">Ver Casos Clínicos</a>
+            <a href="/revisiones.html" class="btn btn-view-revision-all" style="margin-bottom: 10px;">Ver Revisiones</a>
         </div>
     </section>
 
@@ -132,15 +153,19 @@
             </div>
         </section>
 
-    </main>
+        <!-- **** SECCIÓN REVISIONES RECIENTES **** -->
+        <section id="revisiones-recientes" style="padding-top: 3rem;">
+            <div class="container">
+                <h2 class="section-title">Revisiones Médicas Recientes</h2>
+                <div class="items-grid" id="revisionsGridIndex">
+                    <p class="loading-message-index" id="loadingMessageRevisions"><i class="fas fa-spinner fa-spin"></i> Cargando revisiones...</p>
+                    {/* <!-- Revisiones recientes se cargarán aquí --> */}
+                </div>
+            </div>
+        </section>
+        <!-- ****************************************** -->
 
-    <section id="revisiones" style="min-height: 300px;">
-        <div class="container">
-            <h2 class="section-title">Revisiones Destacadas</h2>
-            <p style="text-align: center;">Próximamente: Compilaciones y análisis detallados de temas médicos relevantes.</p>
-            <!-- Aquí podrías listar Revisiones si las implementas -->
-        </div>
-    </section>
+    </main>
 
     <section class="newsletter" id="boletin">
          <div class="container newsletter-content">
@@ -211,7 +236,7 @@
     <!--       FIN SECCIÓN CONTACTO     -->
     <!-- ============================ -->
 
-    <footer id="contacto">
+    <footer id="contacto-footer">
         <div class="container">
             <div class="footer-content">
                 <!-- Columna Descripción CNEURO -->
@@ -232,9 +257,8 @@
                         <li><a href="/">Inicio</a></li>
                         <li><a href="/articles.html">Artículos</a></li>
                         <li><a href="/cases.html">Casos Clínicos</a></li>
-                        <li><a href="#revisiones">Revisiones</a></li>
+                        <li><a href="/revisiones.html">Revisiones</a></li>
                         <li><a href="#sobre-nosotros">Sobre Nosotros</a></li>
-                        <li><a href="/login.html">Login Admin</a></li>
                     </ul>
                 </div>
                 <!-- Columna Contacto -->
@@ -248,7 +272,7 @@
                 </div>
             </div>
             <div class="copyright">
-                <p>© 2024 CNEURO. Todos los derechos reservados.</p>
+                <p>© 2025 CNEURO. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
@@ -276,9 +300,11 @@
         // --- Elementos DOM para Index ---
         const articlesGridIndex = document.getElementById('articlesGridIndex');
         const casesGridIndex = document.getElementById('casesGridIndex');
+        const revisionsGridIndex = document.getElementById('revisionsGridIndex'); // <<< OBTENER GRID REVISIONES
         const loadingMessageArticles = document.getElementById('loadingMessageArticles');
         const loadingMessageCases = document.getElementById('loadingMessageCases');
-        const MAX_ITEMS_INDEX = 3; // Máximo de artículos Y casos a mostrar en portada
+        const loadingMessageRevisions = document.getElementById('loadingMessageRevisions'); // <<< OBTENER MENSAJE CARGA REVISIONES
+        const MAX_ITEMS_INDEX = 3; // Máximo de artículos/casos/revisiones a mostrar en portada
 
          // --- Funciones de Creación de Tarjetas ---
          function createArticleCardHTMLIndex(article) {
@@ -326,6 +352,32 @@
                     </div>
                 </article>`;
         }
+
+         // <<< FUNCIÓN PARA TARJETA DE REVISIÓN (YA EXISTENTE EN RESPUESTA ANTERIOR) >>>
+         function createRevisionCardHTMLIndex(revision) {
+            const formattedDate = revision.publish_date ? new Date(revision.publish_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+            const imageUrl = revision.image_url || '/placeholder.png';
+            const title = revision.title || 'Título no disponible';
+            const excerpt = revision.excerpt || 'Extracto no disponible.';
+            const category = revision.category || 'Sin Categoría';
+            const author = revision.author || 'Autor Desconocido';
+            const detailPageUrl = `/revision.html?id=${revision.id}`; // Enlace a la pág de detalle
+            return `
+                <article class="item-card">
+                    <div class="item-image"><a href="${detailPageUrl}"><img src="${imageUrl}" alt="Imagen para ${title}" loading="lazy" onerror="this.onerror=null;this.src='/placeholder.png'; this.alt='Sin Imagen';"></a></div>
+                    <div class="item-content">
+                        <span class="item-category">${category}</span>
+                        <h3 class="item-title"><a href="${detailPageUrl}" style="text-decoration: none; color: inherit;">${title}</a></h3>
+                        <p class="item-excerpt">${excerpt}</p>
+                        <div class="item-meta">
+                            <span class="item-date"><i class="fas fa-calendar-alt"></i> ${formattedDate}</span>
+                            <span class="item-author"><i class="fas fa-user-edit"></i> ${author}</span>
+                        </div>
+                        <a href="${detailPageUrl}" class="btn btn-view-revision">Leer Revisión</a> 
+                    </div>
+                </article>`;
+        }
+
 
          // --- Funciones de Carga ---
          async function loadRecentArticles() {
@@ -410,6 +462,47 @@
              }
          }
 
+        // <<< FUNCIÓN PARA CARGAR REVISIONES RECIENTES (YA EXISTENTE EN RESPUESTA ANTERIOR) >>>
+         async function loadRecentRevisions() {
+             if (!revisionsGridIndex || !loadingMessageRevisions) return;
+             try {
+                loadingMessageRevisions.style.display = 'block';
+                const response = await fetch('/api/revisions'); // API pública
+                if (!response.ok) {
+                     const err = await response.json().catch(()=>({}));
+                    throw new Error(err.message || `Error ${response.status} al cargar revisiones`);
+                }
+                const allRevisions = await response.json();
+                loadingMessageRevisions.style.display = 'none';
+                revisionsGridIndex.innerHTML = ''; // Limpiar grid
+
+                if (allRevisions.length === 0) {
+                     revisionsGridIndex.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #6c757d;">No hay revisiones publicadas.</p>';
+                } else {
+                    // Ordenar por fecha y tomar las N más recientes
+                    allRevisions.sort((a,b) => new Date(b.publish_date) - new Date(a.publish_date));
+                    const recentRevisions = allRevisions.slice(0, MAX_ITEMS_INDEX);
+                    recentRevisions.forEach(revision => {
+                        const cardHTML = createRevisionCardHTMLIndex(revision);
+                        revisionsGridIndex.insertAdjacentHTML('beforeend', cardHTML);
+                    });
+                     // Añadir botón "Ver Todos" si hay más de N revisiones
+                     if (allRevisions.length > MAX_ITEMS_INDEX) {
+                         const viewMoreButton = `
+                             <div class="view-all-button-container">
+                                 <a href="/revisiones.html" class="btn view-all-button btn-view-revision-all">Ver Todas las Revisiones</a> {/* Clase específica */}
+                             </div>`;
+                         revisionsGridIndex.insertAdjacentHTML('beforeend', viewMoreButton);
+                     }
+                }
+            } catch (error) {
+                console.error('Error al cargar revisiones recientes:', error);
+                loadingMessageRevisions.style.display = 'none';
+                revisionsGridIndex.innerHTML = `<p class="error-message-index">Error al cargar revisiones: ${error.message}</p>`;
+            }
+         }
+
+
         // --- Script Formulario de Contacto ---
         const contactForm = document.getElementById('contactForm');
         const contactSubject = document.getElementById('contactSubject');
@@ -467,6 +560,7 @@
          document.addEventListener('DOMContentLoaded', () => {
              loadRecentArticles();
              loadRecentCases();
+             loadRecentRevisions(); // <<< LLAMADA A LA FUNCIÓN PARA CARGAR REVISIONES
          });
     </script>
 

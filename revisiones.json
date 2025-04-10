@@ -1,26 +1,26 @@
 [
-    {
-      "id": 4700000000001,
-      "category": "Cardiología",
-      "title": "Revisión Sistemática: IECA vs ARA II en ICC",
-      "excerpt": "Análisis comparativo de la evidencia actual sobre el uso de IECA y ARA II en Insuficiencia Cardíaca Congestiva con FEVI reducida.",
-      "full_content": "<h3>Introducción</h3><p>La Insuficiencia Cardíaca Congestiva (ICC) con Fracción de Eyección del Ventrículo Izquierdo (FEVI) reducida es una condición prevalente con alta morbimortalidad. Los Inhibidores de la Enzima Convertidora de Angiotensina (IECA) y los Antagonistas de los Receptores de Angiotensina II (ARA II) son pilares fundamentales del tratamiento...</p><h3>Metodología</h3><p>Se realizó una búsqueda sistemática en PubMed, Embase y Cochrane Library hasta marzo de 2025...</p><h3>Resultados</h3><p>Se incluyeron 15 ensayos clínicos aleatorizados (ECA) con un total de 55,000 pacientes...</p><p>Ambos grupos farmacológicos demostraron una reducción significativa en mortalidad y hospitalizaciones por ICC comparado con placebo...</p><h3>Discusión y Conclusiones</h3><p>Aunque ambos grupos son efectivos, los IECA siguen siendo la primera línea recomendada por la mayoría de las guías debido a la mayor cantidad de evidencia histórica y su menor costo. Los ARA II son una alternativa válida, especialmente en pacientes con intolerancia a los IECA (tos)...</p>",
-      "image_url": "https://images.unsplash.com/photo-1618939303013-27c1196676f8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTAwMnwwfDF8c2VhcmNofDEyfHxyZXNlYXJjaCUyMHBhcGVyfGVufDB8fHx8MTY4OTA3NzQyNQ&ixlib=rb-4.0.3&q=80&w=1080",
-      "author": "Equipo CNEURO",
-      "publish_date": "2025-04-15T08:00:00Z",
-      "pdf_url": null,
-      "last_updated_date": "2025-04-15T09:30:00Z"
-    },
-    {
-      "id": 4700000000002,
-      "category": "Neurología",
-      "title": "Actualización en Tratamiento del Ictus Isquémico Agudo",
-      "excerpt": "Revisión de las últimas novedades en trombólisis intravenosa, trombectomía mecánica y manejo neurocrítico post-ictus.",
-      "full_content": "<h3>Resumen</h3><p>El manejo del ictus isquémico agudo ha evolucionado significativamente. Esta revisión cubre los avances clave...</p><h3>Trombólisis Intravenosa</h3><p>Se discuten las ventanas de tratamiento extendidas y el uso de tenecteplasa...</p><h3>Trombectomía Mecánica</h3><p>Indicaciones ampliadas basadas en estudios recientes como DAWN y DEFUSE 3...</p><h3>Neuroprotección y Cuidados Post-Ictus</h3><p>Estado actual de la investigación en neuroprotectores y manejo en unidad de ictus...</p>",
-      "image_url": null,
-      "author": "Dr. Álvarez",
-      "publish_date": "2025-04-01T10:00:00Z",
-      "pdf_url": "/uploads/revision-ictus-2025.pdf",
-      "last_updated_date": "2025-04-10T11:15:00Z"
-    }
-  ]
+  {
+    "id": 4700000000001,
+    "category": "Cardiología",
+    "title": "Revisión Sistemática: IECA vs ARA II en ICC",
+    "excerpt": "Análisis comparativo de la evidencia actual sobre el uso de IECA y ARA II en Insuficiencia Cardíaca Congestiva con FEVI reducida.",
+    "full_content": "<h3>Introducción</h3><p>La Insuficiencia Cardíaca Congestiva (ICC) con Fracción de Eyección del Ventrículo Izquierdo (FEVI) reducida es una condición prevalente con alta morbimortalidad. Los Inhibidores de la Enzima Convertidora de Angiotensina (IECA) y los Antagonistas de los Receptores de Angiotensina II (ARA II) son pilares fundamentales del tratamiento...</p><h3>Metodología</h3><p>Se realizó una búsqueda sistemática en PubMed, Embase y Cochrane Library hasta marzo de 2025...</p><h3>Resultados</h3><p>Se incluyeron 15 ensayos clínicos aleatorizados (ECA) con un total de 55,000 pacientes...</p><p>Ambos grupos farmacológicos demostraron una reducción significativa en mortalidad y hospitalizaciones por ICC comparado con placebo...</p><h3>Discusión y Conclusiones</h3><p>Aunque ambos grupos son efectivos, los IECA siguen siendo la primera línea recomendada por la mayoría de las guías debido a la mayor cantidad de evidencia histórica y su menor costo. Los ARA II son una alternativa válida, especialmente en pacientes con intolerancia a los IECA (tos)...</p>",
+    "image_url": "https://www.siacardio.com/wp-content/uploads/2018/04/IECA-vs-ARA2-690x450.png",
+    "author": "Equipo CNEURO",
+    "publish_date": "2025-04-15T08:00:00Z",
+    "pdf_url": null,
+    "last_updated_date": "2025-04-09T20:14:54.392Z"
+  },
+  {
+    "id": 4700000000002,
+    "category": "Neurología",
+    "title": "Actualización en Tratamiento del Ictus Isquémico Agudo",
+    "excerpt": "Revisión de las últimas novedades en trombólisis intravenosa, trombectomía mecánica y manejo neurocrítico post-ictus.",
+    "full_content": "<h3>Resumen</h3><p>El manejo del ictus isquémico agudo ha evolucionado significativamente. Esta revisión cubre los avances clave...</p><h3>Trombólisis Intravenosa</h3><p>Se discuten las ventanas de tratamiento extendidas y el uso de tenecteplasa...</p><h3>Trombectomía Mecánica</h3><p>Indicaciones ampliadas basadas en estudios recientes como DAWN y DEFUSE 3...</p><h3>Neuroprotección y Cuidados Post-Ictus</h3><p>Estado actual de la investigación en neuroprotectores y manejo en unidad de ictus...</p>",
+    "image_url": null,
+    "author": "Dr. Álvarez",
+    "publish_date": "2025-04-01T10:00:00Z",
+    "pdf_url": "/uploads/revision-ictus-2025.pdf",
+    "last_updated_date": "2025-04-10T11:15:00Z"
+  }
+]

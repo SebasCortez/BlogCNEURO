@@ -68,7 +68,7 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header (Asegúrate que el enlace a Revisiones está activo aquí) -->
     <header>
         <div class="container header-content">
              <div class="logo"> <a href="/"> <i class="fas fa-heartbeat"></i> <h1>CNEURO</h1> </a> </div>
@@ -78,8 +78,8 @@
                      <li><a href="/articles.html"><i class="fas fa-book-medical"></i> Artículos</a></li>
                      <li><a href="/cases.html"><i class="fas fa-notes-medical"></i> Casos Clínicos</a></li>
                      <li><a href="/revisiones.html" style="background-color: rgba(255, 255, 255, 0.2);"><i class="fas fa-book-reader"></i> Revisiones</a></li>
-                     <li><a href="#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
-                     <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                     <li><a href="/#sobre-nosotros"><i class="fas fa-info-circle"></i> Sobre Nosotros</a></li>
+                     <li><a href="#contacto-footer"><i class="fas fa-envelope"></i> Contacto</a></li>
                      <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
                  </ul>
             </nav>
@@ -122,7 +122,7 @@
     </main>
 
     <!-- Footer -->
-     <footer id="contacto">
+     <footer id="contacto-footer"> <!-- ID cambiado para evitar conflicto con sección form -->
          <div class="container">
              <div class="footer-content">
                  <div class="footer-column">
@@ -156,7 +156,7 @@
                  </div>
              </div>
              <div class="copyright">
-                 <p>© 2024 CNEURO. Todos los derechos reservados.</p>
+                 <p>© 2025 CNEURO. Todos los derechos reservados.</p>
              </div>
          </div>
      </footer>
@@ -180,13 +180,13 @@
             const excerpt = revision.excerpt || 'Extracto no disponible.';
             const category = revision.category || 'Sin Categoría';
             const author = revision.author || 'Autor Desconocido';
-            // Nota: El enlace '/revision.html?id=...' necesita que creemos esa página más adelante
+            // Enlace a la página de detalle (que crearemos después)
             const detailPageUrl = `/revision.html?id=${revision.id}`;
 
             // Usamos las clases .item-* para reutilizar estilos
             return `
                 <article class="item-card">
-                    <div class="item-image"><a href="${detailPageUrl}"><img src="${imageUrl}" alt="Imagen para ${title}" loading="lazy" onerror="this.onerror=null;this.src='/placeholder.png';"></a></div>
+                    <div class="item-image"><a href="${detailPageUrl}"><img src="${imageUrl}" alt="Imagen para ${title}" loading="lazy" onerror="this.onerror=null;this.src='/placeholder.png'; this.alt='Sin Imagen';"></a></div>
                     <div class="item-content">
                         <span class="item-category">${category}</span>
                         <h3 class="item-title"><a href="${detailPageUrl}" style="text-decoration: none; color: inherit;">${title}</a></h3>
@@ -229,7 +229,6 @@
                 const searchMatch = (searchTerm === '' ||
                                      (revision.title && revision.title.toLowerCase().includes(searchTerm)) ||
                                      (revision.excerpt && revision.excerpt.toLowerCase().includes(searchTerm)));
-                                    // Podríamos añadir full_content si fuera necesario, pero más lento
                 return categoryMatch && searchMatch;
             });
 
@@ -239,8 +238,8 @@
             noResultsMessage.style.display = 'none';
 
             if (filteredRevisions.length === 0) {
-                 noResultsMessage.style.display = 'block'; // Mostrar mensaje "sin resultados"
-                 revisionsGrid.appendChild(noResultsMessage); // Moverlo dentro del grid si está vacío
+                 noResultsMessage.style.display = 'block';
+                 revisionsGrid.appendChild(noResultsMessage);
             } else {
                 filteredRevisions.forEach(revision => {
                     const cardHTML = createRevisionCardHTML(revision);
@@ -256,21 +255,20 @@
                 noResultsMessage.style.display = 'none';
                 loadingMessage.style.display = 'block';
 
-                const response = await fetch('/api/revisions'); // Llamar a la nueva ruta API pública
+                const response = await fetch('/api/revisions'); // API pública
                 if (!response.ok) {
-                     const errorData = await response.json().catch(() => ({})); // Intentar obtener mensaje de error
+                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
                 }
-                allRevisions = await response.json(); // Guardar en la variable global
+                allRevisions = await response.json(); // Guardar globalmente
 
                 loadingMessage.style.display = 'none';
 
                 if (!allRevisions || allRevisions.length === 0) {
-                     // Insertar el mensaje directamente si no hay revisiones
                      revisionsGrid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 2rem; color: #6c757d;">No hay revisiones médicas publicadas por el momento.</p>';
                 } else {
-                    populateCategoryFilter(); // Llenar el dropdown de categorías
-                    renderFilteredRevisions(); // Renderizar inicialmente todas las revisiones
+                    populateCategoryFilter(); // Llenar filtro
+                    renderFilteredRevisions(); // Renderizar todas inicialmente
                 }
 
             } catch (error) {
@@ -278,16 +276,16 @@
                 loadingMessage.style.display = 'none';
                 errorMessage.textContent = `No se pudieron cargar las revisiones: ${error.message}. Inténtalo de nuevo más tarde.`;
                 errorMessage.style.display = 'block';
-                revisionsGrid.innerHTML = ''; // Limpiar grid
-                revisionsGrid.appendChild(errorMessage); // Añadir mensaje de error al grid
+                revisionsGrid.innerHTML = '';
+                revisionsGrid.appendChild(errorMessage);
             }
         }
 
         // --- Event Listeners para los controles ---
         categoryFilter.addEventListener('change', renderFilteredRevisions);
-        searchInput.addEventListener('input', renderFilteredRevisions); // 'input' reacciona instantáneamente
+        searchInput.addEventListener('input', renderFilteredRevisions);
 
-        // Carga inicial al cargar el DOM
+        // Carga inicial
         document.addEventListener('DOMContentLoaded', loadAllRevisionsAndSetup);
     </script>
 
