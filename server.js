@@ -11,17 +11,37 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Usa el puerto de Render o 3000 localmente
+const PORT = process.env.PORT || 3000;
 
 // --- Constantes de Rutas ---
-const POSTS_FILE = path.join(__dirname, 'posts.json'); // Para Artículos
-const CASES_FILE = path.join(__dirname, 'cases.json'); // Para Casos Clínicos
-const NEWS_FILE = path.join(__dirname, 'news.json');   // Para Noticias
-const REVISIONS_FILE = path.join(__dirname, 'revisiones.json'); // Para Revisiones Médicas
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR_BASE = process.env.RENDER_DISK_MOUNT_PATH || path.join(__dirname, 'data');
+
+// *** INICIO BLOQUE DE DEPURACIÓN ***
+console.log('------------------------------------');
+console.log('DEBUG: Variable __dirname:', __dirname);
+console.log('DEBUG: Variable RENDER_DISK_MOUNT_PATH:', process.env.RENDER_DISK_MOUNT_PATH);
+console.log('DEBUG: Directorio base de datos calculado (DATA_DIR_BASE):', DATA_DIR_BASE);
+// *** FIN BLOQUE DE DEPURACIÓN ***
+
+const POSTS_FILE = path.join(DATA_DIR_BASE, 'posts.json');
+const CASES_FILE = path.join(DATA_DIR_BASE, 'cases.json');
+const NEWS_FILE = path.join(DATA_DIR_BASE, 'news.json');
+const REVISIONS_FILE = path.join(DATA_DIR_BASE, 'revisiones.json');
+const UPLOADS_DIR = path.join(DATA_DIR_BASE, 'uploads');
+
+// *** INICIO BLOQUE DE DEPURACIÓN ***
+console.log('DEBUG: Ruta calculada para POSTS_FILE:', POSTS_FILE);
+console.log('DEBUG: Ruta calculada para CASES_FILE:', CASES_FILE);
+console.log('DEBUG: Ruta calculada para NEWS_FILE:', NEWS_FILE);
+console.log('DEBUG: Ruta calculada para REVISIONS_FILE:', REVISIONS_FILE);
+console.log('DEBUG: Ruta calculada para UPLOADS_DIR:', UPLOADS_DIR);
+console.log('------------------------------------');
+// *** FIN BLOQUE DE DEPURACIÓN ***
+
+
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PRIVATE_DIR = path.join(__dirname, 'private');
-const DATA_DIR_BASE = process.env.RENDER_DISK_MOUNT_PATH || path.join(__dirname, 'data');
+
 
 // --- Configuración de Seguridad (¡IMPORTANTE!) ---
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -37,9 +57,12 @@ if (SESSION_SECRET === 'adminCAMBIAESTOTAMBIENXD') { // Ajusta si cambiaste el s
 }
 
 // --- Configuración de Multer ---
-fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(err => { if (err.code !== 'EEXIST') console.error("Error creating uploads dir:", err); });
+fs.mkdir(UPLOADS_DIR, { recursive: true }).catch(err => {
+    // Ignorar error si ya existe, loguear otros errores
+    if (err.code !== 'EEXIST') console.error("Error creating dynamic uploads dir:", err);
+});
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR), // <-- Usar la nueva ruta UPLOADS_DIR
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
@@ -87,10 +110,11 @@ const handleMulterUpload = (req, res, next) => {
 };
 
 // --- Middlewares Generales ---
-app.use(express.static(PUBLIC_DIR)); // Servir archivos estáticos (HTML, CSS, JS del cliente)
-app.use('/uploads', express.static(UPLOADS_DIR)); // Servir archivos subidos
-app.use(express.urlencoded({ extended: true })); // Para parsear datos de formularios URL-encoded
-app.use(express.json()); // Para parsear JSON en el body de las requests
+app.use(express.static(PUBLIC_DIR));
+// ¡Importante! Servir los archivos subidos desde la nueva ubicación del disco
+app.use('/uploads', express.static(UPLOADS_DIR)); // <-- Verifica que usa UPLOADS_DIR
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // --- Configuración de Sesión ---
 app.use(session({
