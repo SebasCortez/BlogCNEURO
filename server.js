@@ -11,7 +11,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Usa el puerto de Render o 3000 localmente
 
 // --- Constantes de Rutas ---
 const POSTS_FILE = path.join(__dirname, 'posts.json'); // Para Artículos
@@ -21,6 +21,7 @@ const REVISIONS_FILE = path.join(__dirname, 'revisiones.json'); // Para Revision
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PRIVATE_DIR = path.join(__dirname, 'private');
+const DATA_DIR_BASE = process.env.RENDER_DISK_MOUNT_PATH || path.join(__dirname, 'data');
 
 // --- Configuración de Seguridad (¡IMPORTANTE!) ---
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -1314,9 +1315,9 @@ app.use((err, req, res, next) => {
 
 // --- Iniciar Servidor ---
 app.listen(PORT, () => {
-    console.log(`\nServer running at http://localhost:${PORT}`);
+    console.log(`\nServer running on port ${PORT}`); // Ahora usa la variable PORT
     console.log(`- Public directory: ${PUBLIC_DIR}`);
-    console.log(`- Uploads directory: ${UPLOADS_DIR}`);
+    console.log(`- Uploads directory: ${UPLOADS_DIR}`); // Esta ruta cambiará pronto
     console.log(`- Environment: ${process.env.NODE_ENV || 'development'}`);
 
     // Comprobación de seguridad de admin.html

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "generate-hash": "node generateHash.js"
   },
   "keywords": [],
@@ -12,9 +12,9 @@
   "license": "ISC",
   "description": "Blog médico con autenticación",
   "dependencies": {
-    "bcrypt": "^5.1.1",            
-    "express": "^4.19.2",          
-    "express-session": "^1.18.0", 
-    "multer": "^1.4.5-lts.1"     
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1"
   }
 }

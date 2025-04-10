@@ -1,6 +1,5 @@
 # .gitignore
 node_modules/
-uploads/
 .env      
 npm-debug.log*
 yarn-debug.log*
