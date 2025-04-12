@@ -53,11 +53,11 @@
              transition: background-color 0.3s ease;
          }
          .view-all-button:hover {
-             background-color: var(--secondary-color);
+             background-color: #1a6dd9;
          }
          /* Estilo específico para el botón Ver Todas las Revisiones */
          .btn-view-revision-all {
-             background-color: var(--accent-color);
+             background-color: var(--secondary-color);
              color: var(--dark-color);
          }
          .btn-view-revision-all:hover {
@@ -83,7 +83,7 @@
              font-size: 1.1rem; padding: 0.9rem; border: none; border-radius: 4px;
              cursor: pointer; transition: background-color 0.3s ease;
          }
-         .contact-form-container button[type="submit"]:hover { background-color: var(--secondary-color); }
+         .contact-form-container button[type="submit"]:hover { background-color: var(--secondary-color); color: var(--dark-color); /* Texto oscuro */}
          .contact-form-container small {
              display: block; text-align: center; margin-top: 1rem; color: #6c757d; font-size: 0.9rem;
          }
@@ -104,7 +104,10 @@
     <header>
         <div class="container header-content">
             <div class="logo">
-                <a href="/"> <i class="fas fa-heartbeat"></i> <h1>CNEURO</h1> </a>
+                <a href="/" class="logo-link"> 
+                    <img src="/images/logo-cneuro.png" alt="CNEURO Logo" class="header-logo-image">
+                    <h1>CNEURO</h1>
+                </a>
             </div>
             <nav>
                 <ul>

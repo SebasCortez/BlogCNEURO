@@ -1,11 +1,17 @@
 :root {
-    --primary-color: #2c7873;
-    --secondary-color: #6fb98f;
-    --accent-color: #f3c623;
-    --light-color: #f8f9fa;
-    --dark-color: #343a40;
-    --text-color: #495057;
-    --white: #ffffff;
+    /* --- NUEVA PALETA AZUL/CELESTE/BLANCO --- */
+    --primary-color: #2A7FFF;   /* Azul principal (reemplaza el verde oscuro #2c7873) */
+    --secondary-color: #87CEEB; /* Celeste/Azul claro (reemplaza el verde claro #6fb98f) */
+    --accent-color: #A0C4FF;    /* Azul muy claro o gris azulado para acentos (reemplaza el amarillo #f3c623) - AJUSTA SI ES NECESARIO */
+    --light-color: #f8f9fa;   /* Mantenemos un gris muy claro casi blanco */
+    --dark-color: #343a40;    /* Mantenemos el gris oscuro para texto/fondos */
+    --text-color: #495057;    /* Mantenemos el gris de texto */
+    --white: #ffffff;         /* Blanco puro */
+
+    /* Colores de utilidad (generalmente se mantienen) */
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --success-color: #28a745;
 }
 
 * {
@@ -22,6 +28,7 @@ body {
 }
 
 header {
+    /* El gradiente ahora usará las nuevas variables */
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--white);
     padding: 1rem 0;
@@ -42,6 +49,52 @@ header {
     justify-content: space-between;
     align-items: center;
 }
+
+/* style.css */
+
+/* Estilo para el enlace del logo completo (contenedor flex) */
+.logo a.logo-link {
+    display: inline-flex; /* En línea, elementos hijos en fila */
+    align-items: center; /* Alinea verticalmente la imagen y el texto */
+    text-decoration: none;
+    color: inherit;
+    /* gap: 10px; /* <<< AJUSTA este espacio entre la imagen y el texto "CNEURO" */
+    /* Si prefieres usar margen en lugar de gap: */
+    gap: 0; 
+}
+/* Estilo para la imagen del logo */    
+.header-logo-image {
+    height: 50px; /* <<< AJUSTA esta altura para que sea proporcional al texto H1 */
+    width: auto;  /* Mantiene la proporción */
+    vertical-align: middle; /* Ayuda a la alineación */
+    /* Si prefieres usar margen en lugar de gap: */
+    margin-right: 10px; /* <<< AJUSTA este margen si no usas 'gap' */
+}
+/* Contenedor para el icono y el texto H1 */
+.logo-text-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre el icono y el texto H1 */
+}
+
+/* Puedes ajustar los estilos del icono y H1 si es necesario */
+.logo i {
+     font-size: 1.5rem; /* Quizás ajustar tamaño */
+     color: var(--white); /* O var(--accent-color) si prefieres */
+     line-height: 1; /* Para mejor alineación vertical */
+}
+
+.logo h1 {
+    font-size: 1.8rem; /* Ajusta si es necesario */
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+
+/* --- Fin estilos logo --- */
+
+/* Resto de tu style.css ... */
 
 .logo {
     display: flex;
@@ -93,6 +146,7 @@ nav a:hover {
     left: 0;
     width: 100%;
     height: 100%;
+    /* Puedes ajustar la opacidad o el color del overlay si lo deseas */
     background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -114,9 +168,10 @@ nav a:hover {
 }
 
 .btn {
+    /* El botón principal usaba el accent anterior (amarillo) */
     display: inline-block;
-    background-color: var(--accent-color);
-    color: var(--dark-color);
+    background-color: var(--primary-color); /* Ahora usa el azul principal */
+    color: var(--white);                   /* Texto blanco */
     padding: 0.8rem 1.5rem;
     border-radius: 4px;
     text-decoration: none;
@@ -127,7 +182,9 @@ nav a:hover {
 }
 
 .btn:hover {
-    background-color: #e0b21c;
+    /* Un azul un poco más oscuro o el celeste para el hover */
+    background-color: #1a6dd9; /* Azul más oscuro */
+    /* background-color: var(--secondary-color); */ /* O el celeste */
     transform: translateY(-2px);
 }
 
@@ -135,11 +192,15 @@ nav a:hover {
     padding: 3rem 0;
 }
 
-.section-title {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--primary-color);
-    position: relative;
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    /* Usar el nuevo color de acento o el primario */
+    background-color: var(--primary-color);
+    /* background-color: var(--accent-color); */
+    margin: 0.5rem auto;
 }
 
 .section-title::after {
@@ -191,14 +252,18 @@ nav a:hover {
     padding: 1.5rem;
 }
 
-.post-category {
+.post-category, .case-category, .item-category { /* Estilo de etiquetas de categoría */
     display: inline-block;
+    /* Usar el secundario (celeste) o el de acento */
     background-color: var(--secondary-color);
-    color: var(--white);
+    color: var(--dark-color); /* Texto oscuro para contraste con celeste */
+    /* background-color: var(--accent-color);
+    color: var(--dark-color); */
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.8rem;
     margin-bottom: 0.8rem;
+    align-self: flex-start;
 }
 
 .post-title {
@@ -225,6 +290,7 @@ nav a:hover {
 }
 
 .newsletter {
+    /* Ahora usará el azul primario */
     background-color: var(--primary-color);
     padding: 3rem 0;
     color: var(--white);
@@ -261,8 +327,11 @@ nav a:hover {
 }
 
 .newsletter-form button {
-    background-color: var(--accent-color);
-    color: var(--dark-color);
+    /* Usar el color secundario (celeste) o el primario más oscuro */
+    background-color: var(--secondary-color);
+    color: var(--dark-color); /* Texto oscuro */
+    /* background-color: #1a6dd9;
+    color: var(--white); */
     border: none;
     padding: 0 1.5rem;
     border-radius: 0 4px 4px 0;
@@ -272,9 +341,10 @@ nav a:hover {
 }
 
 .newsletter-form button:hover {
-    background-color: #e0b21c;
+    /* Ajustar el hover */
+    background-color: #76c3e1; /* Celeste más oscuro */
+    /* background-color: var(--primary-color); */
 }
-
 footer {
     background-color: var(--dark-color);
     color: var(--white);
@@ -302,7 +372,9 @@ footer {
     bottom: 0;
     width: 40px;
     height: 2px;
-    background-color: var(--accent-color);
+    /* Usar el color secundario o primario para la línea del footer */
+    background-color: var(--secondary-color);
+    /* background-color: var(--primary-color); */
 }
 
 .footer-column ul {
@@ -341,8 +413,9 @@ footer {
 }
 
 .social-links a:hover {
-    background-color: var(--accent-color);
-    color: var(--dark-color);
+    /* Usar el color secundario (celeste) */
+    background-color: var(--secondary-color);
+    color: var(--dark-color); /* Texto oscuro */
     transform: translateY(-3px);
 }
 
@@ -455,6 +528,7 @@ footer {
 
 .admin-btn:hover {
     background-color: var(--secondary-color);
+    color: var(--dark-color); /* Texto oscuro */
 }
 
 
@@ -528,6 +602,7 @@ footer {
 
 .news-sidebar-toggle-btn:hover {
     background-color: var(--secondary-color);
+    color: var(--dark-color); /* Texto oscuro */
 }
 
 .news-sidebar {
@@ -572,7 +647,7 @@ footer {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--accent-color);
+    border-bottom: 2px solid var(--primary-color);
     font-size: 1.4rem;
     display: flex;
     align-items: center;
@@ -615,7 +690,7 @@ footer {
     text-decoration: none;
 }
 .news-item-title:hover {
-    color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
 .news-item-content {
@@ -659,6 +734,14 @@ footer {
     opacity: 1;
     visibility: visible;
 }
+.btn-read-more { background-color: var(--secondary-color) !important; color: var(--dark-color) !important; }
+.btn-read-more:hover { background-color: var(--primary-color) !important; color: white !important; }
+
+.btn-view-case { background-color: var(--primary-color) !important; color: white !important; }
+.btn-view-case:hover { background-color: var(--secondary-color) !important; color: var(--dark-color) !important; }
+
+.btn-view-revision { background-color: var(--accent-color) !important; color: var(--dark-color) !important; }
+.btn-view-revision:hover { background-color: #8ab0e0 !important; } /* Ajusta el hover del accent */
 
 @media (max-width: 768px) {
     .news-sidebar {
